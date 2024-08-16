@@ -5,7 +5,7 @@ type HelperImageProps = {
   src: string;
 };
 
-const size = 5;
+const size = 'auto';
 
 const HelperImage = ({ label = '', src }: HelperImageProps) => {
   return (

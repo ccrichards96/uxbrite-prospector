@@ -7,11 +7,11 @@ type RootLayoutProps = {
   children: React.ReactNode;
 };
 
-const APP_NAME = 'nextarter-chakra';
+const APP_NAME = 'UX Website Audit';
 
 export const metadata: Metadata = {
-  title: { default: APP_NAME, template: '%s | nextarter-chakra' },
-  description: 'Next.js + chakra-ui + TypeScript template',
+  title: { default: APP_NAME, template: '%s | UX Website Audit' },
+  description: 'Gain insights into your websites user experience with our comprehensive analysis tool.',
   applicationName: APP_NAME,
   appleWebApp: {
     capable: true,
@@ -22,9 +22,9 @@ export const metadata: Metadata = {
     telephone: false,
   },
   openGraph: {
-    url: 'https://nextarter-chakra.sznm.dev',
-    title: 'nextarter-chakra',
-    description: 'Next.js + chakra-ui + TypeScript template',
+    url: 'https://sitechecker.uxbrite.com',
+    title: 'UX Website Audit',
+    description: 'Gain insights into your websites user experience with our comprehensive analysis tool.',
     images: {
       url: 'https://og-image.sznm.dev/**nextarter-chakra**.sznm.dev.png?theme=dark&md=1&fontSize=125px&images=https%3A%2F%2Fsznm.dev%2Favataaars.svg&widths=250',
       alt: 'nextarter-chakra.sznm.dev og-image',
