@@ -16,8 +16,11 @@ import React from 'react';
 
 import CTASection from '~/lib/components/samples/CTASection';
 import Logo from '~/lib/components/samples/Logo';
+import {useApp} from '../../contexts/app';
 
 const Home = () => {
+  const {setDomainLink} = useApp();
+
   const [searchValue, setSearchValue] = React.useState('');
   const [loading, setLoading] = React.useState(false);
   const router = useRouter();
@@ -32,6 +35,11 @@ const Home = () => {
     setLoading(false);
     // Navigate to the results page after the analysis is complete
     router.push('/results');
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchValue(value)
+    setDomainLink(value)
   };
 
   return (
@@ -97,7 +105,7 @@ const Home = () => {
                   mr={2}
                   value={searchValue}
                   disabled={loading}
-                  onChange={(e) => setSearchValue(e.target.value)}
+                  onChange={(e) => handleSearchChange(e.target.value)}
                 />
                 <Button colorScheme="blue" type="submit" disabled={loading}>
                   {loading ? <Spinner size="sm" /> : 'Scan'}

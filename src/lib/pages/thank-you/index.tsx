@@ -1,5 +1,5 @@
 'use client';
-
+import { useContext } from 'react';
 import {
   Flex,
   Grid,
@@ -55,8 +55,11 @@ import {
   MdLock,
   MdLink,
 } from 'react-icons/md';
+import {useApp} from '../../contexts/app';
 
 const ThankYou = () => {
+  const {reportDownloadLink, firstName} = useApp();
+
   const [loading, setLoading] = React.useState(false);
   const router = useRouter();
 
@@ -198,7 +201,7 @@ const ThankYou = () => {
       >
         <Grid textAlign="center">
           <Heading as="h1" size="lg">
-            Thank You, {formData.firstName}! 😊
+            Thank You, {firstName || '-'}! 😊
           </Heading>
           <Text fontSize="sm" mt={5}>
             Click the link below to download your full report. One of our

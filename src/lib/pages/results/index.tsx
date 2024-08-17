@@ -55,8 +55,12 @@ import {
   MdLock,
   MdLink,
 } from 'react-icons/md';
+import {useApp} from '../../contexts/app';
 
 const Results = () => {
+  const {reportDownloadLink, firstName, lastName, domainLink, setEmail, setFirstName, setLastName, setPhoneNum} = useApp();
+
+
   const router = useRouter();
 
   const handleBack = () => {
@@ -219,6 +223,11 @@ const Results = () => {
 
     const isValid = validateForm();
 
+    setEmail(formData.email)
+    setFirstName(formData.firstName);
+    setLastName(formData.lastName);
+    setPhoneNum(formData.phoneNumber);
+    
     console.log('Form submitted:', formData);
     console.log('Form valid:', isValid);
     setFormLoading(true);
@@ -273,7 +282,7 @@ const Results = () => {
               Scanned Domain
             </Heading>
             <Text fontSize="xl" fontWeight="bold">
-              www.testsite.com
+              {domainLink || ''}
             </Text>
             <Text fontSize="sm" color="gray.500" mt={1}>
               Report generated on {new Date().toLocaleDateString()}
