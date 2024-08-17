@@ -10,15 +10,9 @@ const Logo = () => {
   return (
     <Flex gap={2} justifyContent="center" alignItems="center">
       {colorMode === 'light' ? (
-        <HelperImage
-          src="/uxbrite-logo.png"
-          label="Logo"
-        />
+        <HelperImage src="/uxbrite-logo.png" label="Logo" />
       ) : (
-        <HelperImage
-          src="/uxbrite-logo-white.png"
-          label="Logo"
-        />
+        <HelperImage src="/uxbrite-logo-white.png" label="Logo" />
       )}
     </Flex>
   );
