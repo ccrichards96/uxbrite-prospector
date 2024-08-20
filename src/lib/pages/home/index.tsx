@@ -20,7 +20,7 @@ import React from 'react';
 import CTASection from '~/lib/components/samples/CTASection';
 import Logo from '~/lib/components/samples/Logo';
 import {useApp} from '../../contexts/app';
-import io from 'Socket.IO-client'
+import io from 'socket.io-client'
 let socket
 
 const Home = () => {
