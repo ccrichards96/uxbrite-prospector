@@ -47,7 +47,7 @@ interface ReportData {
       cookies: number;
       javascriptFiles: number;
       cssFiles: number;
-      pageSize: string;
+      pageSize: number;
     };
     content: {
       grammaticalErrors: number;
@@ -106,7 +106,7 @@ const initialReportData: ReportData = {
       cookies: 0,
       javascriptFiles: 0,
       cssFiles: 0,
-      pageSize: '',
+      pageSize: 0,
     },
     content: {
       grammaticalErrors: 0,

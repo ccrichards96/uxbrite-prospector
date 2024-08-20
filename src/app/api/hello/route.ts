@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import fetch from 'node-fetch';
-import { JSDOM } from 'jsdom';
 import OpenAI from 'openai';
 import puppeteer from 'puppeteer';
 import { io } from 'socket.io-client';
@@ -123,7 +122,7 @@ Replace types with actual data once website report complete. and return a json r
 async function captureScreenshot(url: string): Promise<string> {
   let browser;
   try {
-    browser = await puppeteer.launch({headless: true, ignoreHTTPSErrors: true});
+    browser = await puppeteer.launch({headless: true, ignoreDefaultArgs: ['--disable-extensions']});
     const page = await browser.newPage();
     await page.goto(url, { waitUntil: 'networkidle0' });
     const screenshot = await page.screenshot({ encoding: 'base64' });
@@ -170,7 +169,7 @@ export const GET = async (req: Request) => {
     })
     socket.emit('progress', { progress: 20, message: 'Fetched site analytics' });
 
-    const siteAnalyticsData = await siteAnalytics.json();
+    const siteAnalyticsData:any = await siteAnalytics.json();
 
     const chatStream = await client.chat.completions.create({
       messages: [{ role: 'user', content: chatPrompt(url)}],
