@@ -1,4 +1,4 @@
-import { Server } from 'Socket.IO'
+import { Server } from 'socket.io'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { Socket } from 'socket.io'
 
