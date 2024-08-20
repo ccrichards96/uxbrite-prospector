@@ -33,6 +33,9 @@ import {
   Tr,
   Th,
   Td,
+  Wrap,
+  WrapItem,
+  Badge
 } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -54,11 +57,27 @@ import {
   MdCompareArrows,
   MdLock,
   MdLink,
+  MdWarning,
+  MdCheckCircle,
+  MdCancel
 } from 'react-icons/md';
 import {useApp} from '../../contexts/app';
 
+
+const sectionIcons = {
+  beauty: { icon: MdPhotoCamera, color: "blue.500" },
+  content: { icon: MdDescription, color: "green.500" },
+  design: { icon: MdBrush, color: "purple.500" },
+  performance: { icon: MdSpeed, color: "orange.500" },
+  security: { icon: MdLock, color: "red.500" },
+  seo: { icon: MdSearch, color: "yellow.500" },
+  webStandards: { icon: MdCode, color: "pink.500" },
+  accessibility: { icon: MdAccessibility, color: "teal.500" },
+  overallGrade: { icon: MdGrade, color: "yellow.500" },
+};
+
 const Results = () => {
-  const {reportDownloadLink, firstName, lastName, domainLink, setEmail, setFirstName, setLastName, setPhoneNum} = useApp();
+  const { reportData, domainLink, firstName, lastName, setEmail, setFirstName, setLastName, setPhoneNum } = useApp();
 
 
   const router = useRouter();
@@ -285,12 +304,12 @@ const Results = () => {
               {domainLink || ''}
             </Text>
             <Text fontSize="sm" color="gray.500" mt={1}>
-              Report generated on {new Date().toLocaleDateString()}
+              Report generated on {reportData.generatedDate}
             </Text>
           </Box>
           <Box borderWidth={1} borderRadius="md" overflow="hidden">
             <Image
-              src="/path-to-thumbnail-image.jpg"
+              src={reportData.screenshot}
               alt="Website Thumbnail"
               objectFit="cover"
               w="full"
@@ -401,7 +420,7 @@ const Results = () => {
               fontWeight="bold"
               color="cyan.500"
             >
-              C+ (3.3)
+                {reportData.overallGrade} ({reportData.gradeScore.toFixed(1)})
             </Text>
           </Flex>
           <Text fontSize="xl">
@@ -410,227 +429,31 @@ const Results = () => {
         </Box>
 
         <Accordion mt={10} width="100%">
-          <AccordionItem>
+        {Object.entries(reportData.sectionGrades).map(([key, value]:[string, any]) => (
+          <AccordionItem key={key}>
             <h2>
               <AccordionButton>
                 <Box flex="1" textAlign="left">
                   <Flex alignItems="center">
-                    <Icon as={MdPhotoCamera} mr={2} color="blue.500" />
-                    <Text fontWeight="bold">Beauty</Text>
+                    <Icon 
+                      as={sectionIcons[key as keyof typeof sectionIcons].icon} 
+                      mr={2} 
+                      color={sectionIcons[key as keyof typeof sectionIcons].color} 
+                    />
+                    <Text fontWeight="bold">{key.charAt(0).toUpperCase() + key.slice(1)}</Text>
                   </Flex>
                 </Box>
-                <Text color="blue.500" fontWeight="bold" mr={2}>
-                  B- (2.7)
+                <Text color={sectionIcons[key as keyof typeof sectionIcons].color} fontWeight="bold" mr={2}>
+                  {value.grade} ({value.score.toFixed(1)})
                 </Text>
                 <AccordionIcon />
               </AccordionButton>
             </h2>
             <AccordionPanel pb={4}>
-              <Text>
-                Your website's visual appeal is good, but there's room for
-                improvement. Consider updating your color scheme, typography,
-                and overall design to create a more modern and engaging look.
-              </Text>
+              <Text>{value.description}</Text>
             </AccordionPanel>
           </AccordionItem>
-
-          <AccordionItem>
-            <h2>
-              <AccordionButton>
-                <Box flex="1" textAlign="left">
-                  <Flex alignItems="center">
-                    <Icon as={MdDescription} mr={2} color="green.500" />
-                    <Text fontWeight="bold">Content</Text>
-                  </Flex>
-                </Box>
-                <Text color="green.500" fontWeight="bold" mr={2}>
-                  B+ (3.3)
-                </Text>
-                <AccordionIcon />
-              </AccordionButton>
-            </h2>
-            <AccordionPanel pb={4}>
-              <Text>
-                Your content is well-written and informative. To improve
-                further, consider adding more multimedia elements like images
-                and videos, and ensure your content is regularly updated to keep
-                it fresh and relevant.
-              </Text>
-            </AccordionPanel>
-          </AccordionItem>
-
-          <AccordionItem>
-            <h2>
-              <AccordionButton>
-                <Box flex="1" textAlign="left">
-                  <Flex alignItems="center">
-                    <Icon as={MdBrush} mr={2} color="purple.500" />
-                    <Text fontWeight="bold">Design</Text>
-                  </Flex>
-                </Box>
-                <Text color="purple.500" fontWeight="bold" mr={2}>
-                  B (3.0)
-                </Text>
-                <AccordionIcon />
-              </AccordionButton>
-            </h2>
-            <AccordionPanel pb={4}>
-              <Text>
-                Your website's design is good, but there's potential for
-                improvement. Focus on enhancing the layout for better user flow,
-                ensure full responsiveness across all devices, and consider
-                modernizing your design elements.
-              </Text>
-            </AccordionPanel>
-          </AccordionItem>
-
-          <AccordionItem>
-            <h2>
-              <AccordionButton>
-                <Box flex="1" textAlign="left">
-                  <Flex alignItems="center">
-                    <Icon as={MdSpeed} mr={2} color="red.500" />
-                    <Text fontWeight="bold">Performance</Text>
-                  </Flex>
-                </Box>
-                <Text color="red.500" fontWeight="bold" mr={2}>
-                  C- (1.7)
-                </Text>
-                <AccordionIcon />
-              </AccordionButton>
-            </h2>
-            <AccordionPanel pb={4}>
-              <Text>
-                Your website's performance could be improved. Consider
-                optimizing images, minifying CSS and JavaScript, and leveraging
-                browser caching to enhance page load speed.
-              </Text>
-            </AccordionPanel>
-          </AccordionItem>
-
-          <AccordionItem>
-            <h2>
-              <AccordionButton>
-                <Box flex="1" textAlign="left">
-                  <Flex alignItems="center">
-                    <Icon as={MdSecurity} mr={2} color="teal.500" />
-                    <Text fontWeight="bold">Security</Text>
-                  </Flex>
-                </Box>
-                <Text color="teal.500" fontWeight="bold" mr={2}>
-                  B+ (3.3)
-                </Text>
-                <AccordionIcon />
-              </AccordionButton>
-            </h2>
-            <AccordionPanel pb={4}>
-              <Text>
-                Your website has good security measures in place. Ensure you
-                keep your SSL certificate up to date and consider implementing
-                additional security headers for even better protection.
-              </Text>
-            </AccordionPanel>
-          </AccordionItem>
-
-          <AccordionItem>
-            <h2>
-              <AccordionButton>
-                <Box flex="1" textAlign="left">
-                  <Flex alignItems="center">
-                    <Icon as={MdSearch} mr={2} color="orange.500" />
-                    <Text fontWeight="bold">SEO</Text>
-                  </Flex>
-                </Box>
-                <Text color="orange.500" fontWeight="bold" mr={2}>
-                  B- (2.7)
-                </Text>
-                <AccordionIcon />
-              </AccordionButton>
-            </h2>
-            <AccordionPanel pb={4}>
-              <Text>
-                Your SEO could use some work. Make sure all pages have unique
-                titles and meta descriptions, optimize your content for relevant
-                keywords, and improve your site's loading speed for better
-                search engine rankings.
-              </Text>
-            </AccordionPanel>
-          </AccordionItem>
-
-          <AccordionItem>
-            <h2>
-              <AccordionButton>
-                <Box flex="1" textAlign="left">
-                  <Flex alignItems="center">
-                    <Icon as={MdCode} mr={2} color="pink.500" />
-                    <Text fontWeight="bold">Web Standards</Text>
-                  </Flex>
-                </Box>
-                <Text color="pink.500" fontWeight="bold" mr={2}>
-                  A- (3.7)
-                </Text>
-                <AccordionIcon />
-              </AccordionButton>
-            </h2>
-            <AccordionPanel pb={4}>
-              <Text>
-                Your website adheres well to web standards. Keep up with the
-                latest HTML, CSS, and JavaScript best practices to maintain this
-                high standard.
-              </Text>
-            </AccordionPanel>
-          </AccordionItem>
-
-          <AccordionItem>
-            <h2>
-              <AccordionButton>
-                <Box flex="1" textAlign="left">
-                  <Flex alignItems="center">
-                    <Icon as={MdAccessibility} mr={2} color="cyan.500" />
-                    <Text fontWeight="bold">Accessibility</Text>
-                  </Flex>
-                </Box>
-                <Text color="cyan.500" fontWeight="bold" mr={2}>
-                  B (3.0)
-                </Text>
-                <AccordionIcon />
-              </AccordionButton>
-            </h2>
-            <AccordionPanel pb={4}>
-              <Text>
-                Your website has good accessibility, but there's room for
-                improvement. Ensure all images have alt text, improve color
-                contrast where needed, and make sure all interactive elements
-                are keyboard accessible.
-              </Text>
-            </AccordionPanel>
-          </AccordionItem>
-
-          <AccordionItem>
-            <h2>
-              <AccordionButton>
-                <Box flex="1" textAlign="left">
-                  <Flex alignItems="center">
-                    <Icon as={MdGrade} mr={2} color="yellow.500" />
-                    <Text fontWeight="bold">Overall Grade</Text>
-                  </Flex>
-                </Box>
-                <Text color="yellow.500" fontWeight="bold" mr={2}>
-                  C+ (2.3)
-                </Text>
-                <AccordionIcon />
-              </AccordionButton>
-            </h2>
-            <AccordionPanel pb={4}>
-              <Text>
-                Your website's overall grade is C+. While there are some strong
-                areas, there's significant room for improvement. Focus on
-                enhancing your performance, SEO, and design to boost your
-                overall grade. Regular updates and optimizations will help you
-                achieve a better score and provide a superior user experience.
-              </Text>
-            </AccordionPanel>
-          </AccordionItem>
+        ))}
         </Accordion>
 
         <Heading as="h1" size="lg" mt={10}>
@@ -663,92 +486,306 @@ const Results = () => {
 
           <TabPanels>
             <TabPanel>
-              <Text>Direct Search Keywords</Text>
-              <Text>Contextual Keywords</Text>
+              <Flex>
+                <Box flex="1">
+                  <Text>Direct Search Keywords ({reportData.detailedReports.keywords.directSearch.length})</Text>
+                  <Wrap spacing={2} mt={2}>
+                    {reportData.detailedReports.keywords.directSearch.map((keyword, index) => (
+                      <WrapItem key={index}>
+                        <Badge>{keyword}</Badge>
+                      </WrapItem>
+                    ))}
+                  </Wrap>
+                </Box>
+                <Box width="auto" textAlign="right">
+                  <Text>Optimal Range: 10-20 keywords</Text>
+                  <Icon
+                    as={reportData.detailedReports.keywords.directSearch.length >= 10 && reportData.detailedReports.keywords.directSearch.length <= 20 ? MdCheckCircle : (reportData.detailedReports.keywords.directSearch.length < 10 ? MdWarning : MdCancel)}
+                    color={reportData.detailedReports.keywords.directSearch.length >= 10 && reportData.detailedReports.keywords.directSearch.length <= 20 ? "green.500" : (reportData.detailedReports.keywords.directSearch.length < 10 ? "yellow.500" : "red.500")}
+                  />
+                </Box>
+              </Flex>
+              <Flex mt={4}>
+                <Box flex="1">
+                  <Text>Contextual Keywords ({reportData.detailedReports.keywords.contextual.length})</Text>
+                  <Wrap spacing={2} mt={2}>
+                    {reportData.detailedReports.keywords.contextual.map((keyword, index) => (
+                      <WrapItem key={index}>
+                        <Badge>{keyword}</Badge>
+                      </WrapItem>
+                    ))}
+                  </Wrap>
+                </Box>
+                <Box width="auto" textAlign="right">
+                  <Text>Optimal Range: 15-30 keywords</Text>
+                  <Icon
+                    as={reportData.detailedReports.keywords.contextual.length >= 15 && reportData.detailedReports.keywords.contextual.length <= 30 ? MdCheckCircle : (reportData.detailedReports.keywords.contextual.length < 15 ? MdWarning : MdCancel)}
+                    color={reportData.detailedReports.keywords.contextual.length >= 15 && reportData.detailedReports.keywords.contextual.length <= 30 ? "green.500" : (reportData.detailedReports.keywords.contextual.length < 15 ? "yellow.500" : "red.500")}
+                  />
+                </Box>
+              </Flex>
             </TabPanel>
             <TabPanel>
               <Box>
                 <Flex direction="column" gap={4}>
-                  <Box>
-                    <Text fontWeight="bold">Robots.txt</Text>
-                    <Text>Content for Robots.txt</Text>
-                  </Box>
-                  <Box>
-                    <Text fontWeight="bold">Indexable</Text>
-                    <Text>Content for Indexable</Text>
-                  </Box>
-                  <Box>
-                    <Text fontWeight="bold">Redirects</Text>
-                    <Text>Content for Redirects</Text>
-                  </Box>
-                  <Box>
-                    <Text fontWeight="bold">Meta</Text>
-                    <Text>Content for Meta</Text>
-                  </Box>
-                  <Box>
-                    <Text fontWeight="bold">Search Engine Ranking</Text>
-                    <Text>Content for Search Engine Ranking</Text>
-                  </Box>
+                  <Flex>
+                    <Box flex="1">
+                      <Text fontWeight="bold">Robots.txt</Text>
+                      <Text>{reportData.detailedReports.seo.robotsTxt}</Text>
+                    </Box>
+                    <Box textAlign="right">
+                      <Text>Optimal: Present and properly configured</Text>
+                      <Icon as={MdCheckCircle} color={reportData.detailedReports.seo.robotsTxt ? "green.500" : "red.500"} />
+                    </Box>
+                  </Flex>
+                  <Flex>
+                    <Box flex="1">
+                      <Text fontWeight="bold">Indexable</Text>
+                      <Text>{reportData.detailedReports.seo.indexable ? 'Yes' : 'No'}</Text>
+                    </Box>
+                    <Box textAlign="right">
+                      <Text>Optimal: Yes</Text>
+                      <Icon as={reportData.detailedReports.seo.indexable ? MdCheckCircle : MdCancel} color={reportData.detailedReports.seo.indexable ? "green.500" : "red.500"} />
+                    </Box>
+                  </Flex>
+                  <Flex>
+                    <Box flex="1">
+                      <Text fontWeight="bold">Redirects</Text>
+                      <Text>{reportData.detailedReports.seo.redirects.join(', ')}</Text>
+                    </Box>
+                    <Box textAlign="right">
+                      <Text>Optimal: Minimal (0-2)</Text>
+                      <Icon as={reportData.detailedReports.seo.redirects.length <= 2 ? MdCheckCircle : (reportData.detailedReports.seo.redirects.length <= 5 ? MdWarning : MdCancel)} color={reportData.detailedReports.seo.redirects.length <= 2 ? "green.500" : (reportData.detailedReports.seo.redirects.length <= 5 ? "yellow.500" : "red.500")} />
+                    </Box>
+                  </Flex>
+                  <Flex>
+                    <Box flex="1">
+                      <Text fontWeight="bold">Meta</Text>
+                      <Text>Title: {reportData.detailedReports.seo.meta.title}</Text>
+                      <Text>Description: {reportData.detailedReports.seo.meta.description}</Text>
+                    </Box>
+                    <Box textAlign="right">
+                      <Text>Optimal: Title (50-60 chars), Description (150-160 chars)</Text>
+                      <Icon as={
+                        (reportData.detailedReports.seo.meta.title.length >= 50 && reportData.detailedReports.seo.meta.title.length <= 60 &&
+                        reportData.detailedReports.seo.meta.description.length >= 150 && reportData.detailedReports.seo.meta.description.length <= 160) 
+                        ? MdCheckCircle 
+                        : ((reportData.detailedReports.seo.meta.title.length >= 40 && reportData.detailedReports.seo.meta.title.length <= 70 &&
+                        reportData.detailedReports.seo.meta.description.length >= 140 && reportData.detailedReports.seo.meta.description.length <= 170)
+                        ? MdWarning
+                        : MdCancel)
+                      } 
+                      color={
+                        (reportData.detailedReports.seo.meta.title.length >= 50 && reportData.detailedReports.seo.meta.title.length <= 60 &&
+                        reportData.detailedReports.seo.meta.description.length >= 150 && reportData.detailedReports.seo.meta.description.length <= 160) 
+                        ? "green.500" 
+                        : ((reportData.detailedReports.seo.meta.title.length >= 40 && reportData.detailedReports.seo.meta.title.length <= 70 &&
+                        reportData.detailedReports.seo.meta.description.length >= 140 && reportData.detailedReports.seo.meta.description.length <= 170)
+                        ? "yellow.500"
+                        : "red.500")
+                      } />
+                    </Box>
+                  </Flex>
+                  <Flex>
+                    <Box flex="1">
+                      <Text fontWeight="bold">Search Engine Ranking</Text>
+                      <Text>{reportData.detailedReports.seo.searchEngineRanking}</Text>
+                    </Box>
+                    <Box textAlign="right">
+                      <Text>Optimal: Top 10</Text>
+                      <Icon as={
+                        reportData.detailedReports.seo.searchEngineRanking <= 10 
+                        ? MdCheckCircle 
+                        : (reportData.detailedReports.seo.searchEngineRanking <= 50 
+                          ? MdWarning 
+                          : MdCancel)
+                      } 
+                      color={
+                        reportData.detailedReports.seo.searchEngineRanking <= 10 
+                        ? "green.500" 
+                        : (reportData.detailedReports.seo.searchEngineRanking <= 50 
+                          ? "yellow.500" 
+                          : "red.500")
+                      } />
+                    </Box>
+                  </Flex>
                 </Flex>
               </Box>
             </TabPanel>
             <TabPanel>
               <Box>
                 <Flex direction="column" gap={4}>
-                  <Box>
-                    <Text fontWeight="bold">Cookies</Text>
-                    <Text>Content for Robots.txt</Text>
-                  </Box>
-                  <Box>
-                    <Text fontWeight="bold">Javascript Files</Text>
-                    <Text>Content for Indexable</Text>
-                  </Box>
-                  <Box>
-                    <Text fontWeight="bold">CSS Files</Text>
-                    <Text>Content for Redirects</Text>
-                  </Box>
-                  <Box>
-                    <Text fontWeight="bold">Page Size</Text>
-                    <Text>Content for Meta</Text>
-                  </Box>
+                  <Flex justify="space-between" align="center">
+                    <Box flex="1">
+                      <Text fontWeight="bold">Cookies</Text>
+                      <Text>{reportData.detailedReports.performance.cookies}</Text>
+                    </Box>
+                    <Box textAlign="right">
+                      <Text>Optimal: 1-5</Text>
+                      <Icon 
+                        as={reportData.detailedReports.performance.cookies <= 5 ? MdCheckCircle : reportData.detailedReports.performance.cookies <= 10 ? MdWarning : MdCancel} 
+                        color={reportData.detailedReports.performance.cookies <= 5 ? "green.500" : reportData.detailedReports.performance.cookies <= 10 ? "yellow.500" : "red.500"}
+                      />
+                    </Box>
+                  </Flex>
+                  <Flex justify="space-between" align="center">
+                    <Box flex="1">
+                      <Text fontWeight="bold">Javascript Files</Text>
+                      <Text>{reportData.detailedReports.performance.javascriptFiles}</Text>
+                    </Box>
+                    <Box textAlign="right">
+                      <Text>Optimal: 1-10</Text>
+                      <Icon 
+                        as={reportData.detailedReports.performance.javascriptFiles <= 10 ? MdCheckCircle : reportData.detailedReports.performance.javascriptFiles <= 20 ? MdWarning : MdCancel} 
+                        color={reportData.detailedReports.performance.javascriptFiles <= 10 ? "green.500" : reportData.detailedReports.performance.javascriptFiles <= 20 ? "yellow.500" : "red.500"}
+                      />
+                    </Box>
+                  </Flex>
+                  <Flex justify="space-between" align="center">
+                    <Box flex="1">
+                      <Text fontWeight="bold">CSS Files</Text>
+                      <Text>{reportData.detailedReports.performance.cssFiles}</Text>
+                    </Box>
+                    <Box textAlign="right">
+                      <Text>Optimal: 1-5</Text>
+                      <Icon 
+                        as={reportData.detailedReports.performance.cssFiles <= 5 ? MdCheckCircle : reportData.detailedReports.performance.cssFiles <= 10 ? MdWarning : MdCancel} 
+                        color={reportData.detailedReports.performance.cssFiles <= 5 ? "green.500" : reportData.detailedReports.performance.cssFiles <= 10 ? "yellow.500" : "red.500"}
+                      />
+                    </Box>
+                  </Flex>
+                  <Flex justify="space-between" align="center">
+                    <Box flex="1">
+                      <Text fontWeight="bold">Page Size</Text>
+                      <Text>{reportData.detailedReports.performance.pageSize}</Text>
+                    </Box>
+                    <Box textAlign="right">
+                      <Text>Optimal: less than 1MB</Text>
+                      <Icon 
+                        as={reportData.detailedReports.performance.pageSize < 1000000 ? MdCheckCircle : reportData.detailedReports.performance.pageSize < 2000000 ? MdWarning : MdCancel} 
+                        color={reportData.detailedReports.performance.pageSize < 1000000 ? "green.500" : reportData.detailedReports.performance.pageSize < 2000000 ? "yellow.500" : "red.500"}
+                      />
+                    </Box>
+                  </Flex>
                 </Flex>
               </Box>
               <Text>Performance content goes here.</Text>
             </TabPanel>
             <TabPanel>
               <Box>
-                <Flex direction="column" gap={4}>
+              <Flex direction="column" gap={4}>
+              <Box display="flex" justifyContent="space-between" alignItems="center">
                   <Box>
-                    <Text fontWeight="bold">Grammatical Errors</Text>
-                    <Text>Content for Grammatical Errors</Text>
+                      <Text fontWeight="bold">Grammatical Errors</Text>
+                      <Text>{reportData.detailedReports.content.grammaticalErrors}</Text>
                   </Box>
-                  <Box>
-                    <Text fontWeight="bold"># of Words</Text>
-                    <Text>Content for # of Words</Text>
-                  </Box>
-                  <Box>
-                    <Text fontWeight="bold">Unique Words</Text>
-                    <Text>Content for Unique Words</Text>
-                  </Box>
-                  <Box>
-                    <Text fontWeight="bold">Images</Text>
-                    <Text>Content for Images</Text>
-                  </Box>
-                  <Box>
-                    <Text fontWeight="bold">Videos</Text>
-                    <Text>Content for Videos</Text>
-                  </Box>
-                  <Box>
-                    <Text fontWeight="bold">Backlinks</Text>
-                    <Text>Content for Backlinks</Text>
-                  </Box>
-                  <Box>
-                    <Text fontWeight="bold">Language</Text>
-                    <Text>Content for Language</Text>
-                  </Box>
-                </Flex>
+                  <Flex alignItems="center">
+                      <Text mr={2}>0-2</Text>
+                      {reportData.detailedReports.content.grammaticalErrors <= 2 ? (
+                          <Icon as={MdCheckCircle} color="green.500" />
+                      ) : reportData.detailedReports.content.grammaticalErrors <= 5 ? (
+                          <Icon as={MdWarning} color="yellow.500" />
+                      ) : (
+                          <Icon as={MdCancel} color="red.500" />
+                      )}
+                  </Flex>
               </Box>
-            </TabPanel>
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Box>
+                      <Text fontWeight="bold"># of Words</Text>
+                      <Text>{reportData.detailedReports.content.wordCount}</Text>
+                  </Box>
+                  <Flex alignItems="center">
+                      <Text mr={2}>300-1000</Text>
+                      {reportData.detailedReports.content.wordCount >= 300 && reportData.detailedReports.content.wordCount <= 1000 ? (
+                          <Icon as={MdCheckCircle} color="green.500" />
+                      ) : reportData.detailedReports.content.wordCount > 1000 ? (
+                          <Icon as={MdWarning} color="yellow.500" />
+                      ) : (
+                          <Icon as={MdCancel} color="red.500" />
+                      )}
+                  </Flex>
+              </Box>
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Box>
+                      <Text fontWeight="bold">Unique Words</Text>
+                      <Text>{reportData.detailedReports.content.uniqueWords}</Text>
+                  </Box>
+                  <Flex alignItems="center">
+                      <Text mr={2}>100-300</Text>
+                      {reportData.detailedReports.content.uniqueWords >= 100 && reportData.detailedReports.content.uniqueWords <= 300 ? (
+                          <Icon as={MdCheckCircle} color="green.500" />
+                      ) : reportData.detailedReports.content.uniqueWords > 300 ? (
+                          <Icon as={MdWarning} color="yellow.500" />
+                      ) : (
+                          <Icon as={MdCancel} color="red.500" />
+                      )}
+                  </Flex>
+              </Box>
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Box>
+                      <Text fontWeight="bold">Images</Text>
+                      <Text>{reportData.detailedReports.content.images}</Text>
+                  </Box>
+                  <Flex alignItems="center">
+                      <Text mr={2}>1-5</Text>
+                      {reportData.detailedReports.content.images >= 1 && reportData.detailedReports.content.images <= 5 ? (
+                          <Icon as={MdCheckCircle} color="green.500" />
+                      ) : reportData.detailedReports.content.images > 5 ? (
+                          <Icon as={MdWarning} color="yellow.500" />
+                      ) : (
+                          <Icon as={MdCancel} color="red.500" />
+                      )}
+                  </Flex>
+              </Box>
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Box>
+                      <Text fontWeight="bold">Videos</Text>
+                      <Text>{reportData.detailedReports.content.videos}</Text>
+                  </Box>
+                  <Flex alignItems="center">
+                      <Text mr={2}>0-2</Text>
+                      {reportData.detailedReports.content.videos <= 2 ? (
+                          <Icon as={MdCheckCircle} color="green.500" />
+                      ) : reportData.detailedReports.content.videos <= 4 ? (
+                          <Icon as={MdWarning} color="yellow.500" />
+                      ) : (
+                          <Icon as={MdCancel} color="red.500" />
+                      )}
+                  </Flex>
+              </Box>
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Box>
+                      <Text fontWeight="bold">Backlinks</Text>
+                      <Text>{reportData.detailedReports.content.backlinks}</Text>
+                  </Box>
+                  <Flex alignItems="center">
+                      <Text mr={2}>5-20</Text>
+                      {reportData.detailedReports.content.backlinks >= 5 && reportData.detailedReports.content.backlinks <= 20 ? (
+                          <Icon as={MdCheckCircle} color="green.500" />
+                      ) : reportData.detailedReports.content.backlinks > 20 ? (
+                          <Icon as={MdWarning} color="yellow.500" />
+                      ) : (
+                          <Icon as={MdCancel} color="red.500" />
+                      )}
+                  </Flex>
+              </Box>
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Box>
+                      <Text fontWeight="bold">Language</Text>
+                      <Text>{reportData.detailedReports.content.language}</Text>
+                  </Box>
+                  <Flex alignItems="center">
+                      <Text mr={2}>Detected</Text>
+                      {reportData.detailedReports.content.language ? (
+                          <Icon as={MdCheckCircle} color="green.500" />
+                      ) : (
+                          <Icon as={MdCancel} color="red.500" />
+                      )}
+                  </Flex>
+              </Box>
+              </Flex>
+            </Box>            </TabPanel>
             <TabPanel>
               <Box>
                 <Text fontWeight="bold" mb={4}>
@@ -765,33 +802,33 @@ const Results = () => {
                       <Th>Website</Th>
                       <Th>Avg. Monthly Visitors</Th>
                       <Th>Bounce Rate</Th>
-                      <Th>Conversion Rate</Th>
+                      <Th>Avg Time On Site</Th>
                       <Th>Link</Th>
                     </Tr>
                   </Thead>
                   <Tbody>
                     <Tr backgroundColor="teal.600">
                       <Td>
-                        <Image src={yourSiteData.thumbnail} width="300px" />
+                        <Image src={reportData.screenshot} width="300px" />
                       </Td>
                       <Td>Your Site</Td>
                       <Td>
-                        {yourSiteData.avgMonthlyVisitors.toLocaleString()}
+                        {reportData.siteData.avgMonthlyVisitors.toLocaleString()}
                       </Td>
-                      <Td>{yourSiteData.bounceRate}%</Td>
-                      <Td>{yourSiteData.conversionRate}%</Td>
+                      <Td>{reportData.siteData.bounceRate}%</Td>
+                      <Td>{reportData.siteData.conversionRate}%</Td>
                       <Td>
                         <IconButton
                           aria-label="Visit site"
                           onClick={() =>
-                            window.open(yourSiteData.url, '_blank')
+                            window.open(domainLink, '_blank')
                           }
                         >
                           <Icon as={MdLink} />
                         </IconButton>
                       </Td>
                     </Tr>
-                    {competitors.map((competitor, index) => (
+                    {reportData.competitors.map((competitor, index) => (
                       <Tr key={index}>
                         <Td>
                           <Image src={competitor.thumbnail} width="300px" />
@@ -800,8 +837,8 @@ const Results = () => {
                         <Td>
                           {competitor.avgMonthlyVisitors.toLocaleString()}
                         </Td>
-                        <Td>{competitor.bounceRate}%</Td>
-                        <Td>{competitor.conversionRate}%</Td>
+                        <Td>{competitor.bounceRate.toFixed(2)}%</Td>
+                        <Td>{competitor.conversionRate.toFixed(0)}</Td>
                         <Td>
                           <IconButton
                             aria-label="Visit site"
@@ -832,7 +869,7 @@ const Results = () => {
             Here are the top recommendations to improve your online presence:
           </Text>
           <VStack spacing={4} align="stretch" position="relative">
-            {recommendations.slice(0, 6).map((recommendation, index) => (
+            {reportData.recommendations.slice(0, 6).map((recommendation, index) => (
               <Box key={index} p={4} borderWidth={1} borderRadius="md">
                 <Flex alignItems="center">
                   <Icon as={MdLightbulb} color="yellow.400" mr={2} />

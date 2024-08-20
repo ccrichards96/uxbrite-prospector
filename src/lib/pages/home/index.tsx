@@ -9,6 +9,9 @@ import {
   Button,
   Spinner,
   Box,
+  InputGroup, 
+  InputLeftAddon,
+  Select
 } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -17,9 +20,30 @@ import React from 'react';
 import CTASection from '~/lib/components/samples/CTASection';
 import Logo from '~/lib/components/samples/Logo';
 import {useApp} from '../../contexts/app';
+import io from 'Socket.IO-client'
+let socket
 
 const Home = () => {
-  const {setDomainLink} = useApp();
+  const {setDomainLink, setReportData} = useApp();
+
+  React.useEffect(() => {
+    socketInitializer()
+  }, [])
+
+  const [completionPercentage, setCompletionPercentage] = React.useState(0);
+
+  const socketInitializer = async () => {
+    await fetch('/api/socket')
+    socket = io()
+
+    socket.on('connect', () => {
+      console.log('connected')
+    })
+
+    socket.on('update-input', msg => {
+      setCompletionPercentage(msg)
+    })
+  }
 
   const [searchValue, setSearchValue] = React.useState('');
   const [loading, setLoading] = React.useState(false);
@@ -29,8 +53,39 @@ const Home = () => {
     e.preventDefault();
     setLoading(true);
     // Add your logic here to handle the search/analysis
-    console.log('Analyzing:', searchValue);
+    const domain = `https://${searchValue.trim()}`;
+    console.log('Analyzing:', domain);
     // Simulating an async operation
+
+
+    try {
+      const response = await fetch(`/api/hello?url=${domain}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },      })
+
+      if (!response.ok) {
+        throw new Error('API request failed')
+      }
+      console.log('API:', response)
+
+      const data = await response.json()
+      console.log('API response:', data)
+
+      // Process the API response as needed
+      // For example, you might want to store the result in the app context
+      setReportData(data.response)
+
+      setLoading(false)
+      // Navigate to the results page after the analysis is complete
+      router.push('/results')
+    } catch (error) {
+      console.error('Error calling API:', error)
+      setLoading(false)
+      // Handle the error appropriately, e.g., show an error message to the user
+    }
+
     await new Promise((resolve) => setTimeout(resolve, 3000));
     setLoading(false);
     // Navigate to the results page after the analysis is complete
@@ -99,14 +154,20 @@ const Home = () => {
               transition={{ delay: 0.8, duration: 0.6 }}
             >
               <Flex as="form" mt={10} onSubmit={handleSubmit} gap={2}>
-                <Input
-                  placeholder="Enter website URL"
-                  size="md"
-                  mr={2}
-                  value={searchValue}
-                  disabled={loading}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                />
+                <InputGroup>
+                  <InputLeftAddon>
+                    <Select variant='flushed' defaultValue="https://" size="sm">
+                      <option value="https://">https://</option>
+                    </Select>
+                  </InputLeftAddon>
+                  <Input
+                    placeholder="Enter website URL"
+                    size="md"
+                    value={searchValue}
+                    disabled={loading}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                  />
+                </InputGroup>
                 <Button colorScheme="blue" type="submit" disabled={loading}>
                   {loading ? <Spinner size="sm" /> : 'Scan'}
                 </Button>

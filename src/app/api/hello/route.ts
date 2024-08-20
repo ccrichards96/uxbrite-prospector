@@ -1,7 +1,231 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-
 import { NextResponse } from 'next/server';
+import fetch from 'node-fetch';
+import { JSDOM } from 'jsdom';
+import OpenAI from 'openai';
+import puppeteer from 'puppeteer';
+import { io } from 'socket.io-client';
 
-export const GET = () => {
-  return NextResponse.json({ name: 'John Doe' }, { status: 200 });
+
+
+const client = new OpenAI({
+  apiKey: process.env['OPENAI_API_KEY'], // This is the default and can be omitted
+});
+
+const chatPrompt = (url: string): string => {
+  return `
+Please assist in a UX Website Audit and is designed to analyze domains and provide a comprehensive report on SEO, content, performance, design, and accessibility. When reviewing a website, it considers the site as a primary digital experience for brands, evaluating it across several key criteria: Beauty, Content, Design, Performance, Security, SEO, Web Standards, and Accessibility. The analysis includes a numerical score for each criterion, ranging from 1 (Bad) to 5 (Great), and a final website grade based on the average score. The GPT emphasizes clarity, detail, and actionable insights, avoiding vague or overly technical language unless necessary. The overall goal is to provide a well-rounded, understandable, and useful audit to help improve the website's user experience and performance. The tone is professional yet light, with a touch of fun to keep the communication engaging and approachable.
+Here is the criteria for grading websites.
+
+When reviewing a website as the first digital experience for most brands, we start by considering the following criteria that is being evaluated.
+Beauty – Beauty is in the eye of the beholder. Is the site visually pleasing?
+Content – captions, copywriting, data, descriptions, grammar, images, photos, stories, text, videos
+Design – layout, mobile friendliness, navigation, responsive design, structure, typography, etc.
+Performance – speed of webpage access on various devices from diverse geographic locations
+Security – HTTPS, SSL, TLS 1.3, vulnerability analysis
+SEO – search engine optimization, can we find the site on google based on relevant results?
+Web Standards – proper use of HTML, CSS, and JavaScript according to W3C guidelines
+Accessibility – How easy and streamlined is it to access your website? Consider all the hundreds of thousands of devices across the globe.
+Each criteria section we will provide a numerical score from 1 to 5:. 
+
+1 - Bad - Major Rework / Revamp Needed
+2 - Needs Attention - Significant Improvements Needed
+3 - Average - Improvements Needed
+4 - Good - Little to no improvement needed
+5 - Great - No improvements / keep it going!!
+
+At the end, we take an average of the sum of the categories, and your final website grade will be assigned.
+4.75 - 5.00: A+
+4.50 - 4.74: A
+4.25 - 4.49: A-
+4.00 - 4.24: B+
+3.75 - 3.99: B
+3.50 - 3.74: B-
+3.25 - 3.49: C+
+3.00 - 3.24: C
+2.75 - 2.99: C-
+2.50 - 2.74: D
+2.73 & Below: F
+
+
+Then provide a JSON response for our tech teams to take the response. It should be structured as follows:
+
+interface ReportData {
+  overallGrade: string;
+  gradeScore: number;
+  generatedDate: string;
+  screenshot: string;
+  siteData:{
+    avgMonthlyVisitors: string;
+    bounceRate: string;
+    conversionRate: string;
+  };
+  sectionGrades: {
+    beauty: { grade: string; score: number; description: string };
+    content: { grade: string; score: number; description: string };
+    design: { grade: string; score: number; description: string };
+    performance: { grade: string; score: number; description: string };
+    security: { grade: string; score: number; description: string };
+    seo: { grade: string; score: number; description: string };
+    webStandards: { grade: string; score: number; description: string };
+    accessibility: { grade: string; score: number; description: string };
+    overallGrade: { grade: string; score: number; description: string };
+  };  //The grade object should be A, B, C, D, or F based on the grading scale provided above. Please provide verbose descriptions for each section - at least a paragraph.
+  detailedReports: {
+    keywords: {
+      directSearch: string[]; // Provide at least 10 direct keywords
+      contextual: string[];  // Provide at least 10 contextual keywords
+    };
+    seo: {
+      robotsTxt: string;
+      indexable: boolean;
+      redirects: string[];
+      meta: {
+        title: string;
+        description: string;
+      };
+      searchEngineRanking: number;
+    };
+    performance: {
+      cookies: number;
+      javascriptFiles: number;
+      cssFiles: number;
+      pageSize: string;
+    };
+    content: {
+      grammaticalErrors: number;
+      wordCount: number;
+      uniqueWords: number;
+      images: number;
+      videos: number;
+      backlinks: number;
+      language: string;
+    };
+  };
+  competitors: Array<{
+    name: string;
+    avgMonthlyVisitors: number;
+    bounceRate: number;
+    conversionRate: number;
+    url: string; //Please validate that this url is valid and not a dead website.
+    thumbnail: string; // Provide thumbnail image url of the URL provided in each competitor object.
+  }>;
+  recommendations: Array<{
+    title: string;
+    description: string;
+  }>; // Provide at least 10 recommendations for the prospect.
+}
+
+Replace types with actual data once website report complete. and return a json response for the website: ${url}
+`;
+};
+
+
+async function captureScreenshot(url: string): Promise<string> {
+  let browser;
+  try {
+    browser = await puppeteer.launch({headless: true, ignoreHTTPSErrors: true});
+    const page = await browser.newPage();
+    await page.goto(url, { waitUntil: 'networkidle0' });
+    const screenshot = await page.screenshot({ encoding: 'base64' });
+    return `data:image/png;base64,${screenshot}`;
+  } catch (error) {
+    console.log('Error capturing screenshot:', error);
+    return '';
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
+  }
+}
+export const GET = async (req: Request) => {
+
+  const socket = io('ws://localhost:3000');
+
+
+  const { searchParams } = new URL(req.url);
+  const url = searchParams.get('url');
+
+  if (!url) {
+    return NextResponse.json({ error: 'URL parameter is required' }, { status: 400 });
+  }
+
+  try {
+
+    socket.on('connect', () => {
+      console.log('Socket.IO connection established');
+      socket.emit('progress', { progress: 0, message: 'Starting analysis' });
+    });
+
+    const response = await fetch(url);
+    socket.emit('progress', { progress: 10, message: 'Fetched initial URL' });
+
+    const siteAnalyticsURL = `https://data.similarweb.com/api/v1/data?domain=${url.replace('https://','')}`
+
+    const siteAnalytics = await fetch(siteAnalyticsURL, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      },
+    })
+    socket.emit('progress', { progress: 20, message: 'Fetched site analytics' });
+
+    const siteAnalyticsData = await siteAnalytics.json();
+
+    const chatStream = await client.chat.completions.create({
+      messages: [{ role: 'user', content: chatPrompt(url)}],
+      model: 'gpt-3.5-turbo',
+      stream: true,
+    });
+
+    socket.emit('progress', { progress: 30, message: 'Performing Full Deep Dive' });
+
+    let responseString = '';
+
+    for await (const chunk of chatStream) {
+      if (chunk.choices[0]?.delta?.content){
+        if (chunk.choices[0]?.delta?.content === '\n') {
+          continue;
+        }
+        responseString += chunk.choices[0]?.delta?.content
+      }
+    }
+
+    let parsedResponse;
+    try {
+      parsedResponse = JSON.parse(responseString);
+    } catch (parseError) {
+      console.error('Error parsing JSON:', parseError);
+      console.log('Raw response:', responseString);
+      return NextResponse.json({ error: 'Failed to parse the response' }, { status: 500 });
+    }
+
+    socket.emit('progress', { progress: 60, message: 'Generating Competitor Analysis' });
+
+    console.log(parsedResponse.competitors)
+    let competitorsArray = [...parsedResponse.competitors]
+
+    parsedResponse.screenshot = await captureScreenshot(url);
+    parsedResponse.competitors = competitorsArray
+
+    socket.emit('progress', { progress: 70, message: 'Sifting thru meta data' });
+
+    console.log(siteAnalyticsData)
+    // console.log(siteAnalyticsData["Engagments"])
+    if (typeof siteAnalyticsData === 'object' && siteAnalyticsData !== null) {
+      parsedResponse["siteData"].bounceRate = siteAnalyticsData["Engagments"]?.BounceRate
+      parsedResponse["siteData"].avgMonthlyVisitors = Object.values(siteAnalyticsData["EstimatedMonthlyVisits"] as Record<string, number>).reduce((sum: number, visits: number) => sum + visits, 0) / Object.keys(siteAnalyticsData["EstimatedMonthlyVisits"] as Record<string, number>).length
+      parsedResponse["siteData"].conversionRate = siteAnalyticsData["Engagments"]?.TimeOnSite
+    }
+
+    socket.emit('progress', { progress: 90, message: 'Finalizing site findings' });
+    socket.emit('progress', { progress: 100, message: 'Analysis complete' });
+    socket.disconnect();
+
+
+    return NextResponse.json({"response": parsedResponse}, { status: 200 });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: 'Failed to analyze the site' }, { status: 500 });
+  }
 };
