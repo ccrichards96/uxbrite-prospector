@@ -2,7 +2,7 @@
   package = "@netlify/plugin-nextjs"
 
 [build]
-  command = 'pnpm build'
+  command = 'CI= pnpm build'
   publish = ".next"
   functions = "functions"
 
