@@ -57,7 +57,7 @@ Grade each section based on reviewed online data. At the end, we take an average
 2.73 & Below: F
 
 
-Then provide a JSON response for frontend software to parse the response. It should be structured as follows:
+Then provide a JSON response for frontend software to parse the response. Look at the data interface below, the response should be structured as follows:
 
 interface ReportData {
   overallGrade: string;
@@ -79,7 +79,7 @@ interface ReportData {
     webStandards: { grade: string; score: number; description: string };
     accessibility: { grade: string; score: number; description: string };
     overallGrade: { grade: string; score: number; description: string };
-  };  //The grade object should be A, B, C, D, or F based on the grading scale provided above. Please provide verbose descriptions for each section - at least a paragraph.
+  };  //The grade object should be A, B, C, D, or F based on the grading scale provided above. Please provide verbose descriptions for each section - at least a two paragraphs.
   detailedReports: {
     keywords: {
       directSearch: string[]; // Provide at least 10 direct keywords
@@ -198,7 +198,7 @@ export const GET = async (req: Request) => {
       progress: 0, message: 'Starting analysis'
     });
 
-    const response = await fetch(url);
+    //const response = await fetch(url);
     // @ts-ignore
 
     pusher.trigger("progress-channel", "update", {
