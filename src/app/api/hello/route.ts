@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server';
 import fetch from 'node-fetch';
 import OpenAI from 'openai';
-import puppeteer from 'puppeteer';
 import * as fs from 'fs';
 import { TemplateHandler } from 'easy-template-x';
 import { createResolver } from "easy-template-x-angular-expressions"
 import { UploadDoc } from "../../../app/fileUploader";
-
 const Pusher = require("pusher");
 const hubspot = require('@hubspot/api-client')
 
@@ -167,23 +165,24 @@ const marketingStages = {
   }
 };
 
-async function captureScreenshot(url: string): Promise<string> {
-  let browser;
-  try {
-    browser = await puppeteer.launch({headless: true, ignoreDefaultArgs: ['--disable-extensions']});
-    const page = await browser.newPage();
-    await page.goto(url, { waitUntil: 'networkidle0' });
-    const screenshot = await page.screenshot({ encoding: 'base64' });
-    return `data:image/png;base64,${screenshot}`;
-  } catch (error) {
-    console.log('Error capturing screenshot:', error);
-    return '';
-  } finally {
-    if (browser) {
-      await browser.close();
-    }
-  }
-}
+// async function captureScreenshot(url: string): Promise<string> {
+//   let browser;
+//   try {
+//     browser = await puppeteer.launch({headless: true, ignoreDefaultArgs: ['--disable-extensions']});
+//     const page = await browser.newPage();
+//     await page.goto(url, { waitUntil: 'networkidle0' });
+//     const screenshot = await page.screenshot({ encoding: 'base64' });
+//     return `data:image/png;base64,${screenshot}`;
+//   } catch (error) {
+//     console.log('Error capturing screenshot:', error);
+//     return '';
+//   } finally {
+//     if (browser) {
+//       await browser.close();
+//     }
+//   }
+// }
+
 export const GET = async (req: Request) => {
   
   const { searchParams } = new URL(req.url);
@@ -259,9 +258,21 @@ export const GET = async (req: Request) => {
 
     // console.log(parsedResponse.competitors)
     let competitorsArray = [...parsedResponse.competitors]
-    let screenshot = await captureScreenshot(url);
+
+    let screenshot:any = await fetch(process.env.NODE_ENV === 'development' ?
+     'http://localhost:9999/.netlify/functions/screenshot' : `${process.env.NEXT_PUBLIC_HOST}/.netlify/functions/screenshot`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url:url }),
+    });
+
+    const capturedShot = await screenshot.json();
+
+    // let screenshot = await captureScreenshot(url);
     parsedResponse.domain = url;
-    parsedResponse.screenshot = screenshot
+    parsedResponse.screenshot = capturedShot.screenshot
     parsedResponse.competitors = competitorsArray
 
     const transformedData = transformStages(marketingStages);
@@ -269,7 +280,7 @@ export const GET = async (req: Request) => {
 
     parsedResponse = {...parsedResponse, ...transformedData}
 
-    console.log(siteAnalyticsData)
+    //console.log(siteAnalyticsData)
     // console.log(siteAnalyticsData["Engagments"])
     if (typeof siteAnalyticsData === 'object' && siteAnalyticsData !== null) {
       parsedResponse["siteData"].bounceRate = siteAnalyticsData["Engagments"]?.BounceRate
@@ -285,7 +296,7 @@ export const GET = async (req: Request) => {
       progress: 90, message: "Finalizing site findings"
     });
 
-    var logo_binary = Buffer.from(screenshot);
+    var logo_binary = Buffer.from(capturedShot.screenshot, 'base64');
 
     const documentData = {
         ...parsedResponse,
@@ -302,29 +313,27 @@ export const GET = async (req: Request) => {
         brand_oppurtunities: ""
     };
 
-    console.log(documentData)
+    //console.log(documentData)
 
     // 1. read template file
     const templateFile = fs.readFileSync('./src/lib/templates/web-report-template.docx');
   
     const handler = new TemplateHandler();
     let flatData = unnest(documentData)
-    const doc = await handler.process(templateFile, {...flatData, });
+    const doc = await handler.process(templateFile, {...flatData});
 
     var scannedDomain = url.replace(/^https?\:\/\//i, "").replace(/\.com$/, "");
 
     const fileName = `web-report-${scannedDomain}.docx`;
     const data = await UploadDoc(doc, fileName);
 
-    console.log(data)
+    //console.log(data)
 
     pusher.trigger("progress-channel", "update", {
       progress: 100, message: "Analysis complete"
     });
 
     parsedResponse = {...parsedResponse, report_url: `https://ux-prospector.s3.us-east-2.amazonaws.com/${fileName}`}
-
-
     return NextResponse.json({"response": parsedResponse}, { status: 200 });
   } catch (error) {
     console.error(error);

@@ -293,7 +293,7 @@ const Results = () => {
         // For example, you might want to store the result in the app context
         setFormLoading(false)
         // Navigate to the results page after the analysis is complete
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 100));
         router.push('/thank-you');
       }
     } catch (error) {
