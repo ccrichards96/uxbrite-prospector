@@ -261,8 +261,41 @@ const Results = () => {
       // For example:
       // await submitForm()
       // router.push('/success')
-      await new Promise((resolve) => setTimeout(resolve, 6000));
-      router.push('/thank-you');
+
+      const response = await fetch(`/api/hello`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          domain: domainLink,
+          email: formData.email,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          phoneNumber: formData.phoneNumber,
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('API request failed')
+      }
+
+      const data = await response.json()
+      console.log('API response:', data)
+
+      if (data.error) {
+        console.error('API error:', data.error)
+        setFormLoading(false)
+        // Handle the error, e.g., show an error message to the user
+        // You might want to use a state variable or a toast notification here
+      } else {
+        // Process the API response as needed
+        // For example, you might want to store the result in the app context
+        setFormLoading(false)
+        // Navigate to the results page after the analysis is complete
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        router.push('/thank-you');
+      }
     } catch (error) {
       console.error('Error submitting form:', error);
       // Handle error state if needed

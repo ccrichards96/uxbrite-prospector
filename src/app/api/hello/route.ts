@@ -2,8 +2,21 @@ import { NextResponse } from 'next/server';
 import fetch from 'node-fetch';
 import OpenAI from 'openai';
 import puppeteer from 'puppeteer';
-import { io } from 'socket.io-client';
+import * as fs from 'fs';
+import { TemplateHandler } from 'easy-template-x';
+import { createResolver } from "easy-template-x-angular-expressions"
+import { UploadDoc } from "../../../app/fileUploader";
 
+const Pusher = require("pusher");
+const hubspot = require('@hubspot/api-client')
+
+const pusher = new Pusher({
+  appId: process.env['PUSHER_APP_ID'],
+  key: process.env['PUSHER_APP_KEY'],
+  secret: process.env['PUSHER_APP_SECRET'],
+  cluster: "us2",
+  useTLS: true
+});
 
 
 const client = new OpenAI({
@@ -32,7 +45,7 @@ Each criteria section we will provide a numerical score from 1 to 5:.
 4 - Good - Little to no improvement needed
 5 - Great - No improvements / keep it going!!
 
-At the end, we take an average of the sum of the categories, and your final website grade will be assigned.
+Grade each section based on reviewed online data. At the end, we take an average of the sum of the categories, and your final website grade will be assigned.
 4.75 - 5.00: A+
 4.50 - 4.74: A
 4.25 - 4.49: A-
@@ -46,7 +59,7 @@ At the end, we take an average of the sum of the categories, and your final webs
 2.73 & Below: F
 
 
-Then provide a JSON response for our tech teams to take the response. It should be structured as follows:
+Then provide a JSON response for frontend software to parse the response. It should be structured as follows:
 
 interface ReportData {
   overallGrade: string;
@@ -114,10 +127,45 @@ interface ReportData {
   }>; // Provide at least 10 recommendations for the prospect.
 }
 
-Replace types with actual data once website report complete. and return a json response for the website: ${url}
+Replace types with actual accurate data once website report complete and return only a Valid JSON as the response for this prompt.
 `;
 };
 
+
+const marketingStages = {
+  attract: {
+    blogs: true,
+    onlineAds: false,
+    video: false,
+    infographicsPrintMedia: false,
+    socialMedia: true
+  },
+  interestAndDesire: {
+    freeGuidesHelp: false,
+    signupForNewsletter: false,  // You can assign the correct value if needed.
+    faq: false,
+    inPersonEventsWebinars: false,
+    promotionsGiveaways: false,
+    reviewsTestimonials: false,
+    productDemos: false,
+    liveChatAgent: false,
+    freeTrialsServiceTryOut: false,
+    personalizedAds: false
+  },
+  action: {
+    emailOnboardingSalesAutomation: false,
+    consultationCall: true,
+    signupForService: false,
+    purchase: false
+  },
+  loyalty: {
+    events: false,
+    loyaltyPrograms: false,
+    betaAccess: false,
+    specialDealsPromotions: false,
+    customerReferralPrograms: false
+  }
+};
 
 async function captureScreenshot(url: string): Promise<string> {
   let browser;
@@ -137,10 +185,7 @@ async function captureScreenshot(url: string): Promise<string> {
   }
 }
 export const GET = async (req: Request) => {
-
-  const socket = io('ws://localhost:3000');
-
-
+  
   const { searchParams } = new URL(req.url);
   const url = searchParams.get('url');
 
@@ -150,13 +195,16 @@ export const GET = async (req: Request) => {
 
   try {
 
-    socket.on('connect', () => {
-      console.log('Socket.IO connection established');
-      socket.emit('progress', { progress: 0, message: 'Starting analysis' });
+    pusher.trigger("progress-channel", "update", {
+      progress: 0, message: 'Starting analysis'
     });
 
     const response = await fetch(url);
-    socket.emit('progress', { progress: 10, message: 'Fetched initial URL' });
+    // @ts-ignore
+
+    pusher.trigger("progress-channel", "update", {
+      progress: 10, message: 'Fetched initial URL'    
+    });
 
     const siteAnalyticsURL = `https://data.similarweb.com/api/v1/data?domain=${url.replace('https://','')}`
 
@@ -167,7 +215,10 @@ export const GET = async (req: Request) => {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
       },
     })
-    socket.emit('progress', { progress: 20, message: 'Fetched site analytics' });
+
+    pusher.trigger("progress-channel", "update", {
+      progress: 20, message: 'Fetched site analytics'  
+    });
 
     const siteAnalyticsData:any = await siteAnalytics.json();
 
@@ -177,7 +228,9 @@ export const GET = async (req: Request) => {
       stream: true,
     });
 
-    socket.emit('progress', { progress: 30, message: 'Performing Full Deep Dive' });
+    pusher.trigger("progress-channel", "update", {
+      progress: 30, message: 'Performing Full Deep Dive' 
+    });
 
     let responseString = '';
 
@@ -199,15 +252,22 @@ export const GET = async (req: Request) => {
       return NextResponse.json({ error: 'Failed to parse the response' }, { status: 500 });
     }
 
-    socket.emit('progress', { progress: 60, message: 'Generating Competitor Analysis' });
+    // @ts-ignore
+    pusher.trigger("progress-channel", "update", {
+      progress: 60, message: 'Generating Competitor Analysis'
+    });
 
-    console.log(parsedResponse.competitors)
+    // console.log(parsedResponse.competitors)
     let competitorsArray = [...parsedResponse.competitors]
-
-    parsedResponse.screenshot = await captureScreenshot(url);
+    let screenshot = await captureScreenshot(url);
+    parsedResponse.domain = url;
+    parsedResponse.screenshot = screenshot
     parsedResponse.competitors = competitorsArray
 
-    socket.emit('progress', { progress: 70, message: 'Sifting thru meta data' });
+    const transformedData = transformStages(marketingStages);
+
+
+    parsedResponse = {...parsedResponse, ...transformedData}
 
     console.log(siteAnalyticsData)
     // console.log(siteAnalyticsData["Engagments"])
@@ -217,9 +277,52 @@ export const GET = async (req: Request) => {
       parsedResponse["siteData"].conversionRate = siteAnalyticsData["Engagments"]?.TimeOnSite
     }
 
-    socket.emit('progress', { progress: 90, message: 'Finalizing site findings' });
-    socket.emit('progress', { progress: 100, message: 'Analysis complete' });
-    socket.disconnect();
+    pusher.trigger("progress-channel", "update", {
+      progress: 70, message: "Sifting thru meta data"
+    });
+
+    pusher.trigger("progress-channel", "update", {
+      progress: 90, message: "Finalizing site findings"
+    });
+
+    var logo_binary = Buffer.from(screenshot);
+
+    const documentData = {
+        ...parsedResponse,
+        brand_logo: {
+          _type: "image",
+          source: logo_binary,
+          format: 'image/png',
+          height: 400,
+          altText: "Brand Logo", // Optional
+        },
+        brand_slogan: "",
+        targetPersona:"",
+        industry: "",
+        brand_oppurtunities: ""
+    };
+
+    console.log(documentData)
+
+    // 1. read template file
+    const templateFile = fs.readFileSync('./src/lib/templates/web-report-template.docx');
+  
+    const handler = new TemplateHandler();
+    let flatData = unnest(documentData)
+    const doc = await handler.process(templateFile, {...flatData, });
+
+    var scannedDomain = url.replace(/^https?\:\/\//i, "").replace(/\.com$/, "");
+
+    const fileName = `web-report-${scannedDomain}.docx`;
+    const data = await UploadDoc(doc, fileName);
+
+    console.log(data)
+
+    pusher.trigger("progress-channel", "update", {
+      progress: 100, message: "Analysis complete"
+    });
+
+    parsedResponse = {...parsedResponse, report_url: `https://ux-prospector.s3.us-east-2.amazonaws.com/${fileName}`}
 
 
     return NextResponse.json({"response": parsedResponse}, { status: 200 });
@@ -227,4 +330,103 @@ export const GET = async (req: Request) => {
     console.error(error);
     return NextResponse.json({ error: 'Failed to analyze the site' }, { status: 500 });
   }
+
 };
+export async function POST(request: Request) {
+    try {
+      const body = await request.json();
+
+      const hubspotClient = new hubspot.Client({ accessToken: process.env.HUBSPOT_API_KEY })
+
+      const contactObj = {
+        properties: {
+            firstname: body.firstName,
+            lastname: body.lastName,
+            email: body.email,
+            phone: body.phoneNumber,
+        },
+      }
+      const companyObj = {
+          properties: {
+              domain: body.domain,
+              name: body.companyName,
+          },
+      }
+
+      let createContactResponse;
+      try {
+        createContactResponse = await hubspotClient.crm.contacts.basicApi.create(contactObj);
+      } catch (error:any) {
+        if (error.statusCode === 409) {
+          // Contact already exists, fetch the existing contact
+          const searchResponse = await hubspotClient.crm.contacts.searchApi.doSearch({
+            filterGroups: [{
+              filters: [{
+                propertyName: 'email',
+                operator: 'EQ',
+                value: body.email
+              }]
+            }]
+          });
+          createContactResponse = searchResponse.results[0];
+        }
+      }
+
+      const createCompanyResponse = await hubspotClient.crm.companies.basicApi.create(companyObj)
+
+
+      return NextResponse.json({ success: true, data: { contact: createContactResponse, company: createCompanyResponse } }, { status: 200 });
+    } catch (error) {
+      console.error('Error submitting to Hubspot API:', error);
+      return NextResponse.json({ error: 'Failed to submit data to Hubspot API' }, { status: 500 });
+    }
+}
+
+
+function unnest(docData:any) {
+  var res = {};
+  (function recurse(obj, current) {
+    for (var key in obj) {
+      var value = obj[key];
+      var newKey = (current ? current + "." + key : key);  // joined key with dot
+      if (value && typeof value === "object" && key !== "brand_logo") {
+        if (Array.isArray(value)) {
+          res[newKey] = value.map(function(e) { 
+            if(typeof e == 'object') {
+              return unnest(e)
+            } else {
+              return e
+            }
+          })
+        } else {
+          recurse(value, newKey);  // it's a nested object, so do it again
+        }
+      } else {
+        res[newKey] = value;  // it's not an object, so set the property
+      }
+    }
+  })(docData);
+  return res
+}
+
+
+function transformStages(stages:any) {
+  const result:any = {};
+
+  for (const stage in stages) {
+    result[stage] = [];
+
+    for (const key in stages[stage]) {
+      const isActive = stages[stage][key];
+      result[stage].push({
+        visible: isActive,
+        invisible: !isActive,
+        name: key
+          .replace(/([A-Z])/g, ' $1')  // Add a space before capital letters
+          .replace(/^./, str => str.toUpperCase()) // Capitalize the first letter
+      });
+    }
+  }
+
+  return result;
+}
