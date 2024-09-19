@@ -3,11 +3,10 @@ import fetch from 'node-fetch';
 import OpenAI from 'openai';
 import * as fs from 'fs';
 import { TemplateHandler } from 'easy-template-x';
-import { createResolver } from "easy-template-x-angular-expressions"
 import { UploadDoc } from "../../../app/fileUploader";
+
 const Pusher = require("pusher");
 const hubspot = require('@hubspot/api-client')
-
 const pusher = new Pusher({
   appId: process.env['PUSHER_APP_ID'],
   key: process.env['PUSHER_APP_KEY'],
@@ -16,9 +15,8 @@ const pusher = new Pusher({
   useTLS: true
 });
 
-
 const client = new OpenAI({
-  apiKey: process.env['OPENAI_API_KEY'], // This is the default and can be omitted
+  apiKey: process.env['OPENAI_API_KEY'],
 });
 
 const chatPrompt = (url: string): string => {
@@ -125,7 +123,7 @@ interface ReportData {
   }>; // Provide at least 10 recommendations for the prospect.
 }
 
-Replace types with actual accurate data once website report complete and return only a Valid JSON as the response for this prompt.
+Replace types with actual accurate data once website report complete and return only a VALID JSON as the response for this prompt.
 `;
 };
 
@@ -164,24 +162,6 @@ const marketingStages = {
     customerReferralPrograms: false
   }
 };
-
-// async function captureScreenshot(url: string): Promise<string> {
-//   let browser;
-//   try {
-//     browser = await puppeteer.launch({headless: true, ignoreDefaultArgs: ['--disable-extensions']});
-//     const page = await browser.newPage();
-//     await page.goto(url, { waitUntil: 'networkidle0' });
-//     const screenshot = await page.screenshot({ encoding: 'base64' });
-//     return `data:image/png;base64,${screenshot}`;
-//   } catch (error) {
-//     console.log('Error capturing screenshot:', error);
-//     return '';
-//   } finally {
-//     if (browser) {
-//       await browser.close();
-//     }
-//   }
-// }
 
 export const GET = async (req: Request) => {
   
@@ -224,6 +204,8 @@ export const GET = async (req: Request) => {
       stream: true,
     });
 
+    console.log(chatStream)
+
     pusher.trigger("progress-channel", "update", {
       progress: 30, message: 'Performing Full Deep Dive' 
     });
@@ -240,9 +222,9 @@ export const GET = async (req: Request) => {
     }
 
     let parsedResponse;
+    console.log('Raw response:', responseString);
     try {
 
-      console.log('Raw response:', responseString);
 
       parsedResponse = JSON.parse(responseString);
     } catch (parseError) {
@@ -337,7 +319,7 @@ export const GET = async (req: Request) => {
     return NextResponse.json({"response": parsedResponse}, { status: 200 });
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: 'Failed to analyze the site' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to analyze the site', details:error}, { status: 500 });
   }
 
 };
