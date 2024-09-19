@@ -79,7 +79,7 @@ interface ReportData {
     webStandards: { grade: string; score: number; description: string };
     accessibility: { grade: string; score: number; description: string };
     overallGrade: { grade: string; score: number; description: string };
-  };  //The grade object should be A, B, C, D, or F based on the grading scale provided above. Please provide verbose descriptions for each section - at least a two paragraphs.
+  };  //The grade object should be A, B, C, D, or F based on the grading scale provided above. Please provide verbose descriptions for each section - at least a two paragraph.
   detailedReports: {
     keywords: {
       directSearch: string[]; // Provide at least 10 direct keywords
@@ -198,9 +198,6 @@ export const GET = async (req: Request) => {
       progress: 0, message: 'Starting analysis'
     });
 
-    //const response = await fetch(url);
-    // @ts-ignore
-
     pusher.trigger("progress-channel", "update", {
       progress: 10, message: 'Fetched initial URL'    
     });
@@ -244,6 +241,9 @@ export const GET = async (req: Request) => {
 
     let parsedResponse;
     try {
+
+      console.log('Raw response:', responseString);
+
       parsedResponse = JSON.parse(responseString);
     } catch (parseError) {
       console.error('Error parsing JSON:', parseError);
