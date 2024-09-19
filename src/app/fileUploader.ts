@@ -4,7 +4,7 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 //S3 Config
 const s3Config = {
     bucketName: process.env.AWS_BUCKET_NAME as string,
-    region: process.env.AWS_REGION as string,
+    region: process.env.AWS_REGION_US as string,
     accessKeyId: process.env.AWS_ACCESS_KEY_ID_MAIN as string,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY_MAIN as string
 }
