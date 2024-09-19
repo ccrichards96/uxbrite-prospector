@@ -384,11 +384,11 @@ export async function POST(request: Request) {
 
 
 function unnest(docData:any) {
-  var res = {};
+  var res:any = {};
   (function recurse(obj, current) {
     for (var key in obj) {
-      var value = obj[key];
-      var newKey = (current ? current + "." + key : key);  // joined key with dot
+      var value:any = obj[key];
+      var newKey:any = (current ? current + "." + key : key);  // joined key with dot
       if (value && typeof value === "object" && key !== "brand_logo") {
         if (Array.isArray(value)) {
           res[newKey] = value.map(function(e) { 
