@@ -9,7 +9,7 @@ chromium.setHeadlessMode = true;
 // Optional: If you'd like to disable webgl, true is the default.
 chromium.setGraphicsMode = false;
 
-export const handler = async function(event, context: Context) {
+export const handler = async function(event:any, context: Context) {
 
   const browser = await puppeteer.launch({
     args: chromium.args,
