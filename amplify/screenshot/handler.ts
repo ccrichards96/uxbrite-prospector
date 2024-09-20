@@ -1,15 +1,14 @@
 // netlify/functions/screenshot.js
+import type { Handler } from 'aws-lambda';
 const puppeteer = require('puppeteer-core');
 const chromium = require("@sparticuz/chromium");
-
-import { Context } from "@netlify/functions";
 
 chromium.setHeadlessMode = true;
 
 // Optional: If you'd like to disable webgl, true is the default.
 chromium.setGraphicsMode = false;
 
-export const handler = async function(event:any, context: Context) {
+export const handler: Handler = async (event:any, context:any) => {
 
   const browser = await puppeteer.launch({
     args: chromium.args,

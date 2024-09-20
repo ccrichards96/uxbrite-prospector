@@ -4,6 +4,7 @@ import OpenAI from 'openai';
 import * as fs from 'fs';
 import { TemplateHandler } from 'easy-template-x';
 import { UploadDoc } from "../../../app/fileUploader";
+import { Signer } from '@aws-amplify/core';
 
 const Pusher = require("pusher");
 const hubspot = require('@hubspot/api-client')
@@ -241,8 +242,24 @@ export const GET = async (req: Request) => {
     // console.log(parsedResponse.competitors)
     let competitorsArray = [...parsedResponse.competitors]
 
-    let screenshot:any = await fetch(process.env.NODE_ENV === 'development' ?
-     'http://localhost:9999/.netlify/functions/screenshot' : `${process.env.NEXT_PUBLIC_HOST}/.netlify/functions/screenshot`, {
+    const access_info = {
+        secret_key: process.env.MAIN_AWS_SECRET_ACCESS_KEY_MAIN,
+        access_key: process.env.MAIN_AWS_ACCESS_KEY_ID_MAIN,
+    };
+    
+    const service_info = {
+        region: process.env.MAIN_AWS_REGION_US,
+        service: 'lambda',
+    };
+
+    const request = {
+        url: `https://lambda.${service_info.region}.amazonaws.com/2015-03-31/functions/screenshot/invocations`
+    };
+
+    const signedRequest = Signer.sign(request, access_info, service_info);
+
+
+    let screenshot:any = await fetch(signedRequest, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

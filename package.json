@@ -6,23 +6,24 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "turbo": "pnpm dlx turbo@2.0.1",
-    "build:turbo": "pnpm turbo run build",
+    "turbo": "npm dlx turbo@2.0.1",
+    "build:turbo": "npm turbo run build",
     "postbuild": "next-sitemap --config next-sitemap.config.js",
     "start": "next start",
     "lint": "next lint",
-    "lint:fix": "eslint src --fix && pnpm format",
+    "lint:fix": "eslint src --fix && npm format",
     "type-check": "tsc --noEmit",
-    "check:turbo": "pnpm turbo lint type-check",
+    "check:turbo": "npm turbo lint type-check",
     "test:e2e": "playwright test",
     "format": "prettier --write src",
-    "up-interactive": "pnpm up -i",
-    "up-latest": "pnpm up-interactive -L",
+    "up-interactive": "npm up -i",
+    "up-latest": "npm up-interactive -L",
     "release": "cross-env HUSKY=0 standard-version",
     "push-release": "git push --follow-tags origin main",
     "prepare": "husky"
   },
   "dependencies": {
+    "@aws-amplify/core": "^6.4.2",
     "@aws-sdk/client-s3": "^3.651.1",
     "@chakra-ui/next-js": "^2.2.0",
     "@chakra-ui/react": "^2.8.2",
@@ -30,7 +31,6 @@
     "@emotion/styled": "^11.11.5",
     "@hubspot/api-client": "^11.2.0",
     "@netlify/functions": "^2.8.1",
-    "chrome-aws-lambda": "^10.1.0",
     "easy-template-x": "^3.2.1",
     "easy-template-x-angular-expressions": "^0.1.0",
     "express": "^4.21.0",
@@ -49,6 +49,8 @@
     "react-icons": "^5.2.1"
   },
   "devDependencies": {
+    "@aws-amplify/backend": "^1.2.2",
+    "@aws-amplify/backend-cli": "^1.2.7",
     "@commitlint/cli": "^19.3.0",
     "@commitlint/config-conventional": "19.2.2",
     "@commitlint/cz-commitlint": "19.2.0",
@@ -72,7 +74,6 @@
   },
   "engines": {
     "node": ">=20.14.x",
-    "pnpm": ">=9"
-  },
-  "packageManager": "pnpm@9.1.2"
+    "npm": ">=9"
+  }
 }
