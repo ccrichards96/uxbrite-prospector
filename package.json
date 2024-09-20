@@ -20,7 +20,6 @@
     "up-latest": "npm up-interactive -L",
     "release": "cross-env HUSKY=0 standard-version",
     "push-release": "git push --follow-tags origin main",
-    "prepare": "husky"
   },
   "dependencies": {
     "@aws-amplify/core": "^6.4.2",
