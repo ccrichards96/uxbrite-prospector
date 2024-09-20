@@ -4,7 +4,6 @@ import OpenAI from 'openai';
 import * as fs from 'fs';
 import { TemplateHandler } from 'easy-template-x';
 import { UploadDoc } from "../../../app/fileUploader";
-import { Signer } from '@aws-amplify/core';
 
 const Pusher = require("pusher");
 const hubspot = require('@hubspot/api-client')
