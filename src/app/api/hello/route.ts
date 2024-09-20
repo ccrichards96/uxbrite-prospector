@@ -256,10 +256,10 @@ export const GET = async (req: Request) => {
         url: `https://lambda.${service_info.region}.amazonaws.com/2015-03-31/functions/screenshot/invocations`
     };
 
-    const signedRequest = Signer.sign(request, access_info, service_info);
+    //const signedRequest = Signer.sign(request, access_info, service_info);
 
 
-    let screenshot:any = await fetch(signedRequest, {
+    let screenshot:any = await fetch(request.url, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
