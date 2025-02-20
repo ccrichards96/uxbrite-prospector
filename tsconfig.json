@@ -23,7 +23,11 @@
         "name": "next"
       }
     ],
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["src/*"],
+    }
   },
   "include": [
     "next-env.d.ts",
@@ -31,10 +35,10 @@
     "**/*.tsx",
     "src",
     "commitlint.config.js",
-    ".next/types/**/*.ts"
-, "server.js"  ],
+    ".next/types/**/*.ts",
+    "server.js"
+  ],
   "exclude": [
     "node_modules"
   ],
-  "extends": "./tsconfig.paths.json"
 }

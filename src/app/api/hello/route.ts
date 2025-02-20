@@ -242,8 +242,8 @@ export const GET = async (req: Request) => {
     let competitorsArray = [...parsedResponse.competitors]
 
     const access_info = {
-        secret_key: process.env.MAIN_AWS_SECRET_ACCESS_KEY_MAIN,
-        access_key: process.env.MAIN_AWS_ACCESS_KEY_ID_MAIN,
+        secret_key: process.env.MAIN_AWS_SECRET_ACCESS_KEY,
+        access_key: process.env.MAIN_AWS_ACCESS_KEY_ID,
     };
     
     const service_info = {
