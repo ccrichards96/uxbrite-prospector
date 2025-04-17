@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { playAudit } from 'playwright-lighthouse';
 import playwright from 'playwright';
-import puppeteer from 'puppeteer';
-import { CheerioAPI, load } from 'cheerio';
+import puppeteer from 'puppeteer-core';
+import cheerio from 'cheerio';
 import { URL } from 'url';
 
 // Define the structure of the audit report
@@ -18,23 +18,30 @@ interface AuditReport {
 
 // Function to scrape metadata using Puppeteer & Cheerio
 const getMetadata = async (url: string): Promise<AuditReport['metadata']> => {
-  const browser = await puppeteer.launch({ headless: 'new' });
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    executablePath: process.env.CHROME_EXECUTABLE_PATH || '/usr/bin/google-chrome'
+  });
   const page = await browser.newPage();
 
   await page.goto(url, { waitUntil: 'domcontentloaded' });
 
   const content = await page.content();
-  const $: CheerioAPI = load(content);
+  const $ = cheerio.load(content);
 
   const title = $('title').text();
   const description = $('meta[name="description"]').attr('content') || '';
-  const h1Tags = $('h1')
-    .map((_, el) => $(el).text())
-    .get();
-  const canonical = $('link[rel="canonical"]').attr('href') || null;
+  const keywords = $('meta[name="keywords"]').attr('content') || '';
+  const ogTitle = $('meta[property="og:title"]').attr('content') || '';
+  const ogDescription = $('meta[property="og:description"]').attr('content') || '';
+  const ogImage = $('meta[property="og:image"]').attr('content') || '';
+  const canonicalUrl = $('link[rel="canonical"]').attr('href') || '';
+  const h1s = $('h1').map((_, el) => $(el).text()).get();
+  const h2s = $('h2').map((_, el) => $(el).text()).get();
 
   await browser.close();
-  return { title, description, h1Tags, canonical };
+  return { title, description, h1Tags: h1s, canonical: canonicalUrl };
 };
 
 // Function to run Lighthouse audit

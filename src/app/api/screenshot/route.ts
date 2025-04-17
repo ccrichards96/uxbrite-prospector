@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-core';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -13,7 +13,8 @@ export async function GET(request: Request) {
     // Launch a headless browser
     const browser = await puppeteer.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      executablePath: process.env.CHROME_EXECUTABLE_PATH || '/usr/bin/google-chrome'
     });
 
     // Create a new page

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import OpenAI from 'openai';
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-core';
 
 interface Competitor {
   name: string;
@@ -132,7 +132,8 @@ export async function analyzeCompetitorsDetailed(domain: string): Promise<Compet
     const competitors: Competitor[] = [];
     const browser = await puppeteer.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      executablePath: process.env.CHROME_EXECUTABLE_PATH || '/usr/bin/google-chrome'
     });
 
     for (const url of competitorUrls) {

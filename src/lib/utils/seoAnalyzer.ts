@@ -1,5 +1,6 @@
-import puppeteer from 'puppeteer';
-import { CheerioAPI, load } from 'cheerio';
+import puppeteer from 'puppeteer-core';
+import * as cheerio from 'cheerio';
+import axios from 'axios';
 
 interface SEOData {
   robotsTxt: string;
@@ -15,7 +16,8 @@ interface SEOData {
 export async function analyzeSEO(url: string): Promise<SEOData> {
   const browser = await puppeteer.launch({
     headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    executablePath: process.env.CHROME_EXECUTABLE_PATH?.replace(/\\/g, '/') || '/usr/bin/google-chrome'
   });
 
   try {
@@ -40,14 +42,14 @@ export async function analyzeSEO(url: string): Promise<SEOData> {
 
     // Get the HTML content
     const content = await page.content();
-    const $ = load(content);
+    const $ = cheerio.load(content);
 
     // Check robots.txt
     const robotsTxtUrl = new URL('/robots.txt', url).toString();
     let robotsTxtContent = 'No, we did not find a robots.txt file.';
     try {
-      const robotsResponse = await fetch(robotsTxtUrl);
-      if (robotsResponse.ok) {
+      const robotsResponse = await axios.get(robotsTxtUrl);
+      if (robotsResponse.status === 200) {
         robotsTxtContent = 'Yes, we found a robots.txt file.';
       }
     } catch (error) {
