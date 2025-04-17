@@ -8,9 +8,16 @@ const withPWA = require('next-pwa')({
 /** @type {import('next').NextConfig} */
 module.exports = withPWA({
   swcMinify: true,
-  reactStrictMode: true,
+  reactStrictMode: false,
   eslint: {
     dirs: ['src'],
     ignoreDuringBuilds: true,
+  },
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '~': require('path').resolve(__dirname, 'src'),
+    };
+    return config;
   },
 });
