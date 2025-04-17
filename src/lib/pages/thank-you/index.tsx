@@ -163,8 +163,7 @@ const ThankYou = () => {
                 size="lg"
                 leftIcon={<Icon as={MdEmail} />}
                 onClick={() => {
-                  // Add newsletter signup logic here
-                  console.log('Newsletter signup clicked');
+                  window.open('https://uxbrite.substack.com', '_blank');
                 }}
               >
                 Sign Up for Newsletter

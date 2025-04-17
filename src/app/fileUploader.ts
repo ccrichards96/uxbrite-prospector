@@ -6,8 +6,8 @@ const s3Config = {
     bucketName: process.env.MAIN_AWS_BUCKET_NAME as string,
     region: process.env.MAIN_AWS_REGION_US as string,
     credentials:{
-        accessKeyId: process.env.MAIN_AWS_ACCESS_KEY_ID_MAIN as string,
-        secretAccessKey: process.env.MAIN_AWS_SECRET_ACCESS_KEY_MAIN as string
+        accessKeyId: process.env.MAIN_AWS_ACCESS_KEY_ID as string,
+        secretAccessKey: process.env.MAIN_AWS_SECRET_ACCESS_KEY as string
     }
 }
 
@@ -27,9 +27,10 @@ export const UploadDoc = async (buffer: Buffer, key: string) => {
             CacheControl: 'no-cache',
             ContentType: 'officedocument.wordprocessingml.document',
           });
-
+        
+        console.log(`Uploading file to S3 - ${key}`);
         const response = await s3.send(command);
-        console.log(response);
+        console.log(`Upload Success`);
 
         return response;
     } catch (e) {

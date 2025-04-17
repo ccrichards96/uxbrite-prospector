@@ -61,6 +61,7 @@ import {
   MdCheckCircle,
   MdCancel
 } from 'react-icons/md';
+import { FaBuilding } from 'react-icons/fa';
 import {useApp} from '../../contexts/app';
 
 
@@ -79,6 +80,32 @@ const sectionIcons = {
 const Results = () => {
   const { reportData, domainLink, firstName, lastName, setEmail, setFirstName, setLastName, setPhoneNum } = useApp();
 
+  const getGradeMessage = (grade: string) => {
+    switch (grade) {
+      case 'A+':
+      case 'A':
+      case 'A-':
+        return 'Outstanding! Your website is performing exceptionally well!';
+      case 'B+':
+        return 'Great job! Your website is performing very well with just a few areas for improvement.';
+      case 'B':
+        return 'Good work! Your website is solid with some room for enhancement.';
+      case 'B-':
+        return 'Not bad! Your website has potential with some key areas to focus on.';
+      case 'C+':
+        return 'Your website could use some love and attention!';
+      case 'C':
+        return 'Your website needs some significant improvements to reach its potential.';
+      case 'C-':
+        return 'Your website requires substantial work to improve its performance.';
+      case 'D':
+        return 'Your website needs major improvements to be competitive.';
+      case 'F':
+        return 'Your website requires a complete overhaul to meet modern standards.';
+      default:
+        return 'Your website could use some love and attention!';
+    }
+  };
 
   const router = useRouter();
 
@@ -337,7 +364,7 @@ const Results = () => {
               {domainLink || ''}
             </Text>
             <Text fontSize="sm" color="gray.500" mt={1}>
-              Report generated on {reportData.generatedDate}
+              Report generated on {new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}
             </Text>
           </Box>
           <Box borderWidth={1} borderRadius="md" overflow="hidden">
@@ -457,7 +484,7 @@ const Results = () => {
             </Text>
           </Flex>
           <Text fontSize="xl">
-            Overall, it could use some love and attention!
+            {getGradeMessage(reportData.overallGrade)}
           </Text>
         </Box>
 
@@ -584,7 +611,11 @@ const Results = () => {
                   <Flex>
                     <Box flex="1">
                       <Text fontWeight="bold">Redirects</Text>
-                      <Text>{reportData.detailedReports.seo.redirects.join(', ')}</Text>
+                      <Text>
+                        {reportData.detailedReports.seo.redirects.slice(0, 3).join(', ')}
+                        {reportData.detailedReports.seo.redirects.length > 3 && 
+                          ` (and ${reportData.detailedReports.seo.redirects.length - 3} more)`}
+                      </Text>
                     </Box>
                     <Box textAlign="right">
                       <Text>Optimal: Minimal (0-2)</Text>
@@ -835,7 +866,7 @@ const Results = () => {
                       <Th>Website</Th>
                       <Th>Avg. Monthly Visitors</Th>
                       <Th>Bounce Rate</Th>
-                      <Th>Avg Time On Site</Th>
+                      <Th>Conversion Rate</Th>
                       <Th>Link</Th>
                     </Tr>
                   </Thead>
@@ -849,7 +880,7 @@ const Results = () => {
                         {reportData.siteData.avgMonthlyVisitors.toLocaleString()}
                       </Td>
                       <Td>{reportData.siteData.bounceRate}%</Td>
-                      <Td>{reportData.siteData.conversionRate}%</Td>
+                      <Td>{reportData.siteData.conversionRate || '-'}%</Td>
                       <Td>
                         <IconButton
                           aria-label="Visit site"
@@ -864,14 +895,40 @@ const Results = () => {
                     {reportData.competitors.map((competitor, index) => (
                       <Tr key={index}>
                         <Td>
-                          <Image src={competitor.thumbnail} width="300px" />
+                          {competitor.thumbnail ? (
+                            <Image 
+                              src={competitor.thumbnail} 
+                              width="300px" 
+                              maxW={{ base: "150px", md: "200px" }}
+                              height="200px"
+                              objectFit="cover"
+                            />
+                          ) : (
+                            <Box 
+                              width={{ base: "150px", md: "200px" }}
+                              height="200px" 
+                              display="flex" 
+                              alignItems="center" 
+                              justifyContent="center" 
+                              bg="gray.50"
+                              borderRadius="md"
+                              borderWidth="1px"
+                              borderColor="gray.200"
+                            >
+                              <Icon 
+                                as={FaBuilding} 
+                                boxSize={{ base: 8, md: 12 }} 
+                                color="gray.400"
+                              />
+                            </Box>
+                          )}
                         </Td>
                         <Td>{competitor.name}</Td>
                         <Td>
                           {competitor.avgMonthlyVisitors.toLocaleString()}
                         </Td>
                         <Td>{competitor.bounceRate.toFixed(2)}%</Td>
-                        <Td>{competitor.conversionRate.toFixed(0)}</Td>
+                        <Td>{competitor.conversionRate.toFixed(0)}%</Td>
                         <Td>
                           <IconButton
                             aria-label="Visit site"

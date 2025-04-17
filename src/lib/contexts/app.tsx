@@ -76,7 +76,7 @@ interface ReportData {
 const initialReportData: ReportData = {
   overallGrade: 'C+',
   gradeScore: 3.3,
-  generatedDate: new Date().toLocaleDateString(),
+  generatedDate: new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }).replace(/\//g, '-'),
   screenshot: 'https://via.placeholder.com/300x200',
   siteData:{
     avgMonthlyVisitors: "0.00",
