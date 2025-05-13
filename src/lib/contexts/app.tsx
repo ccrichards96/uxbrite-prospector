@@ -2,7 +2,8 @@
 
 'use client';
 
-import type React, { createContext, useState, useContext } from 'react';
+import type React from 'react';
+import { createContext, useState, useContext } from 'react';
 
 type Props = {
   children: React.ReactNode;
