@@ -1,4 +1,5 @@
 'use client';
+
 import {
   Box,
   Button,
@@ -8,8 +9,8 @@ import {
   Link as ChakraLink,
   Flex,
 } from '@chakra-ui/react';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 
 const Page404 = () => {
   return (
@@ -17,7 +18,7 @@ const Page404 = () => {
       <motion.div
         animate={{ y: 20 }}
         transition={{ repeat: Infinity, duration: 2, repeatType: 'reverse' }}
-      > 
+      >
         <Box width={{ base: '100%', sm: '70%', md: '60%' }} margin="0 auto">
           <Image
             src="/404 Error-pana.svg"

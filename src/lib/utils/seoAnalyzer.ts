@@ -1,6 +1,6 @@
-import puppeteer from 'puppeteer-core';
-import * as cheerio from 'cheerio';
 import axios from 'axios';
+import * as cheerio from 'cheerio';
+import puppeteer from 'puppeteer-core';
 
 interface SEOData {
   robotsTxt: string;
@@ -17,16 +17,18 @@ export async function analyzeSEO(url: string): Promise<SEOData> {
   const browser = await puppeteer.launch({
     headless: true,
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    executablePath: process.env.CHROME_EXECUTABLE_PATH?.replace(/\\/g, '/') || '/usr/bin/google-chrome'
+    executablePath:
+      process.env.CHROME_EXECUTABLE_PATH?.replace(/\\/g, '/') ||
+      '/usr/bin/google-chrome',
   });
 
   try {
     const page = await browser.newPage();
-    
+
     // Enable request interception to track redirects
     const redirects: string[] = [];
     await page.setRequestInterception(true);
-    page.on('request', request => {
+    page.on('request', (request) => {
       const url = request.url();
       if (url !== page.url()) {
         redirects.push(url);
@@ -35,9 +37,9 @@ export async function analyzeSEO(url: string): Promise<SEOData> {
     });
 
     // Navigate to the URL
-    const response = await page.goto(url, { 
+    const response = await page.goto(url, {
       waitUntil: 'networkidle0',
-      timeout: 30000 
+      timeout: 30000,
     });
 
     // Get the HTML content
@@ -57,12 +59,14 @@ export async function analyzeSEO(url: string): Promise<SEOData> {
     }
 
     // Check if page is indexable
-    const isIndexable = !$('meta[name="robots"]').attr('content')?.includes('noindex');
+    const isIndexable = !$('meta[name="robots"]')
+      .attr('content')
+      ?.includes('noindex');
 
     // Get meta data
     const meta = {
       title: $('title').text() || '',
-      description: $('meta[name="description"]').attr('content') || ''
+      description: $('meta[name="description"]').attr('content') || '',
     };
 
     // Get search engine ranking (this is a simplified version)
@@ -72,11 +76,10 @@ export async function analyzeSEO(url: string): Promise<SEOData> {
     return {
       robotsTxt: robotsTxtContent,
       indexable: isIndexable,
-      redirects: redirects,
+      redirects,
       meta,
-      searchEngineRanking
+      searchEngineRanking,
     };
-
   } catch (error) {
     console.error('Error analyzing SEO:', error);
     throw error;
@@ -91,7 +94,7 @@ async function getSearchEngineRanking(url: string): Promise<number> {
   // 1. Use a search engine API (like Google Search Console API)
   // 2. Or use a third-party service that provides ranking data
   // 3. Or implement your own ranking algorithm based on various factors
-  
+
   // For now, return a random number between 1-100
   return Math.floor(Math.random() * 100) + 1;
-} 
+}

@@ -25,19 +25,22 @@ interface IndustryMetrics {
   conversionRate: number;
 }
 
-export async function analyzeCompetitors(domain: string): Promise<IndustryMetrics> {
+export async function analyzeCompetitors(
+  domain: string
+): Promise<IndustryMetrics> {
   try {
     // Initialize OpenAI
     const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY
+      apiKey: process.env.OPENAI_API_KEY,
     });
 
     // Use OpenAI to get industry metrics
     const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [{
-        role: "user",
-        content: `
+      model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'user',
+          content: `
           Based on this domain: ${domain}
           Please provide industry average metrics for websites in this sector.
           Return a JSON object with the following structure:
@@ -47,22 +50,28 @@ export async function analyzeCompetitors(domain: string): Promise<IndustryMetric
             "conversionRate": number // Average conversion rate (as a percentage)
           }
           Make sure the values are realistic industry averages.
-        `
-      }]
+        `,
+        },
+      ],
     });
 
     try {
       const content = completion.choices[0].message?.content;
       if (content) {
         // Clean the response to ensure it's valid JSON
-        const cleanedContent = content.trim().replace(/^```json\n?/, '').replace(/\n?```$/, '');
+        const cleanedContent = content
+          .trim()
+          .replace(/^```json\n?/, '')
+          .replace(/\n?```$/, '');
         const metrics = JSON.parse(cleanedContent);
-        
+
         // Validate and format the metrics
         return {
-          avgMonthlyVisitors: Number((metrics.avgMonthlyVisitors || 0).toFixed(2)),
+          avgMonthlyVisitors: Number(
+            (metrics.avgMonthlyVisitors || 0).toFixed(2)
+          ),
           bounceRate: Number((metrics.bounceRate || 0).toFixed(2)),
-          conversionRate: Number((metrics.conversionRate || 0).toFixed(2))
+          conversionRate: Number((metrics.conversionRate || 0).toFixed(2)),
         };
       }
     } catch (parseError) {
@@ -73,39 +82,42 @@ export async function analyzeCompetitors(domain: string): Promise<IndustryMetric
     return {
       avgMonthlyVisitors: 0,
       bounceRate: 0,
-      conversionRate: 0
+      conversionRate: 0,
     };
-
   } catch (error) {
     console.error('Error in competitor analysis:', error);
     return {
       avgMonthlyVisitors: 0,
       bounceRate: 0,
-      conversionRate: 0
+      conversionRate: 0,
     };
   }
 }
 
-export async function analyzeCompetitorsDetailed(domain: string): Promise<Competitor[]> {
+export async function analyzeCompetitorsDetailed(
+  domain: string
+): Promise<Competitor[]> {
   try {
     // Initialize OpenAI
     const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY
+      apiKey: process.env.OPENAI_API_KEY,
     });
 
     // Step 1: Use OpenAI to identify potential competitors
     const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [{
-        role: "user",
-        content: `
+      model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'user',
+          content: `
           Based on this domain: ${domain}
           Please identify 5 major competitor websites in the same industry.
           Return only a JSON array of competitor URLs.
           Make sure the URLs are valid and active websites.
           Example response format: ["https://example1.com", "https://example2.com"]
-        `
-      }]
+        `,
+        },
+      ],
     });
 
     let competitorUrls: string[] = [];
@@ -113,10 +125,15 @@ export async function analyzeCompetitorsDetailed(domain: string): Promise<Compet
       const content = completion.choices[0].message?.content;
       if (content) {
         // Clean the response to ensure it's valid JSON
-        const cleanedContent = content.trim().replace(/^```json\n?/, '').replace(/\n?```$/, '');
+        const cleanedContent = content
+          .trim()
+          .replace(/^```json\n?/, '')
+          .replace(/\n?```$/, '');
         const parsed = JSON.parse(cleanedContent);
         // Ensure we have an array of strings
-        competitorUrls = Array.isArray(parsed) ? parsed.filter(url => typeof url === 'string') : [];
+        competitorUrls = Array.isArray(parsed)
+          ? parsed.filter((url) => typeof url === 'string')
+          : [];
       }
     } catch (parseError) {
       console.error('Error parsing OpenAI response:', parseError);
@@ -133,7 +150,8 @@ export async function analyzeCompetitorsDetailed(domain: string): Promise<Compet
     const browser = await puppeteer.launch({
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
-      executablePath: process.env.CHROME_EXECUTABLE_PATH || '/usr/bin/google-chrome'
+      executablePath:
+        process.env.CHROME_EXECUTABLE_PATH || '/usr/bin/google-chrome',
     });
 
     for (const url of competitorUrls) {
@@ -150,8 +168,9 @@ export async function analyzeCompetitorsDetailed(domain: string): Promise<Compet
           {
             headers: {
               'Content-Type': 'application/json',
-              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-            }
+              'User-Agent':
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            },
           }
         );
 
@@ -165,13 +184,23 @@ export async function analyzeCompetitorsDetailed(domain: string): Promise<Compet
         await page.close();
 
         // Calculate metrics with 0 as fallback and round to 2 decimal points
-        const avgMonthlyVisitors = similarWebData?.EstimatedMonthlyVisits 
-          ? Number((Object.values(similarWebData.EstimatedMonthlyVisits).reduce((sum, visits) => sum + visits, 0) / 
-            Object.keys(similarWebData.EstimatedMonthlyVisits).length).toFixed(2))
+        const avgMonthlyVisitors = similarWebData?.EstimatedMonthlyVisits
+          ? Number(
+              (
+                Object.values(similarWebData.EstimatedMonthlyVisits).reduce(
+                  (sum, visits) => sum + visits,
+                  0
+                ) / Object.keys(similarWebData.EstimatedMonthlyVisits).length
+              ).toFixed(2)
+            )
           : 0;
 
-        const bounceRate = Number((similarWebData?.Engagments?.BounceRate || 0).toFixed(2));
-        const conversionRate = Number((similarWebData?.Engagments?.TimeOnSite || 0).toFixed(2));
+        const bounceRate = Number(
+          (similarWebData?.Engagments?.BounceRate || 0).toFixed(2)
+        );
+        const conversionRate = Number(
+          (similarWebData?.Engagments?.TimeOnSite || 0).toFixed(2)
+        );
 
         competitors.push({
           name: new URL(url).hostname.replace('www.', ''),
@@ -179,7 +208,7 @@ export async function analyzeCompetitorsDetailed(domain: string): Promise<Compet
           bounceRate,
           conversionRate,
           url,
-          thumbnail: `data:image/png;base64,${screenshot}`
+          thumbnail: `data:image/png;base64,${screenshot}`,
         });
       } catch (error) {
         console.error(`Error analyzing competitor ${url}:`, error);
@@ -190,10 +219,9 @@ export async function analyzeCompetitorsDetailed(domain: string): Promise<Compet
 
     await browser.close();
     return competitors;
-
   } catch (error) {
     console.error('Error in competitor analysis:', error);
     // Return empty array if analysis fails
     return [];
   }
-} 
+}

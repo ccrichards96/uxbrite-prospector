@@ -1,8 +1,8 @@
 // contexts/app.ts
+
 'use client';
 
-import React from 'react';
-import { createContext, useState, useContext} from 'react';
+import type React, { createContext, useState, useContext } from 'react';
 
 type Props = {
   children: React.ReactNode;
@@ -13,11 +13,11 @@ interface ReportData {
   gradeScore: number;
   generatedDate: string;
   screenshot: string;
-  siteData:{
+  siteData: {
     avgMonthlyVisitors: string;
     bounceRate: string;
     conversionRate: string;
-  }
+  };
   sectionGrades: {
     beauty: { grade: string; score: number; description: string };
     content: { grade: string; score: number; description: string };
@@ -76,22 +76,63 @@ interface ReportData {
 const initialReportData: ReportData = {
   overallGrade: 'C+',
   gradeScore: 3.3,
-  generatedDate: new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }).replace(/\//g, '-'),
+  generatedDate: new Date()
+    .toLocaleDateString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric',
+    })
+    .replace(/\//g, '-'),
   screenshot: 'https://via.placeholder.com/300x200',
-  siteData:{
-    avgMonthlyVisitors: "0.00",
-    bounceRate: "0.00",
-    conversionRate: "0.00",
+  siteData: {
+    avgMonthlyVisitors: '0.00',
+    bounceRate: '0.00',
+    conversionRate: '0.00',
   },
   sectionGrades: {
-    beauty: { grade: 'B-', score: 2.7, description: 'Your website\'s visual appeal is good, but there\'s room for improvement.' },
-    content: { grade: 'B+', score: 3.3, description: 'Your content is well-written and informative.' },
-    design: { grade: 'B', score: 3.0, description: 'Your website\'s design is good, but there\'s potential for improvement.' },
-    performance: { grade: 'C-', score: 1.7, description: 'Your website\'s performance could be improved.' },
-    security: { grade: 'B+', score: 3.3, description: 'Your website has good security measures in place.' },
-    seo: { grade: 'B-', score: 2.7, description: 'Your SEO could use some work.' },
-    webStandards: { grade: 'A-', score: 3.7, description: 'Your website adheres well to web standards.' },
-    accessibility: { grade: 'B', score: 3.0, description: 'Your website has good accessibility, but there\'s room for improvement.' },
+    beauty: {
+      grade: 'B-',
+      score: 2.7,
+      description:
+        "Your website's visual appeal is good, but there's room for improvement.",
+    },
+    content: {
+      grade: 'B+',
+      score: 3.3,
+      description: 'Your content is well-written and informative.',
+    },
+    design: {
+      grade: 'B',
+      score: 3.0,
+      description:
+        "Your website's design is good, but there's potential for improvement.",
+    },
+    performance: {
+      grade: 'C-',
+      score: 1.7,
+      description: "Your website's performance could be improved.",
+    },
+    security: {
+      grade: 'B+',
+      score: 3.3,
+      description: 'Your website has good security measures in place.',
+    },
+    seo: {
+      grade: 'B-',
+      score: 2.7,
+      description: 'Your SEO could use some work.',
+    },
+    webStandards: {
+      grade: 'A-',
+      score: 3.7,
+      description: 'Your website adheres well to web standards.',
+    },
+    accessibility: {
+      grade: 'B',
+      score: 3.0,
+      description:
+        "Your website has good accessibility, but there's room for improvement.",
+    },
   },
   detailedReports: {
     keywords: { directSearch: [], contextual: [] },
@@ -128,27 +169,28 @@ const appContextDefaultValues: AppContextType = {
   email: '',
   phoneNum: '',
   reportDownloadLink: '',
-  domainLink:'',
+  domainLink: '',
   reportData: initialReportData,
-  setDomainLink:() => {},
+  setDomainLink: () => {},
   setReportDownloadLink: () => {},
   setFirstName: () => {},
   setLastName: () => {},
   setEmail: () => {},
   setPhoneNum: () => {},
   setReportData: () => {},
-
 };
 
-export const AppContext = createContext<AppContextType>(appContextDefaultValues);
+export const AppContext = createContext<AppContextType>(
+  appContextDefaultValues
+);
 
 interface AppContextType {
   firstName: string;
   lastName: string;
   email: string;
   reportDownloadLink: string;
-  domainLink:string;
-  phoneNum:string;
+  domainLink: string;
+  phoneNum: string;
   reportData: ReportData;
   setDomainLink: (link: string) => void;
   setReportDownloadLink: (link: string) => void;
@@ -182,17 +224,13 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     setFirstName,
     setLastName,
     setEmail,
-    setReportData
+    setReportData,
   };
 
   return (
-    <>
-      <AppContext.Provider value={contextValue}>
-        {children}
-      </AppContext.Provider>
-    </>
+    <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>
   );
-}
+};
 // export default useContext(AppContext);
 
 export function useApp() {

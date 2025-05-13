@@ -79,10 +79,10 @@
     "prettier": "^3.3.2",
     "puppeteer": "^23.11.1",
     "standard-version": "^9.5.0",
-    "ts-node": "^10.9.2",
+    "ts-node": "^10.9.2"
   },
   "engines": {
-    "node": ">=20.14.x",
+    "node": ">=18.18.x",
     "npm": ">=9"
   }
 }

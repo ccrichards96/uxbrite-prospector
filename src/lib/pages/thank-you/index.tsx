@@ -1,76 +1,37 @@
 'use client';
-import { useContext } from 'react';
+
 import {
   Flex,
   Grid,
   Heading,
   Text,
-  Input,
   Button,
-  Spinner,
   Box,
   Icon,
   Image,
-  IconButton,
-  VStack,
-  Skeleton,
-  FormControl,
-  FormLabel,
-  Accordion,
-  AccordionItem,
-  AccordionButton,
-  AccordionPanel,
-  AccordionIcon,
-  Tabs,
-  TabList,
-  TabPanels,
-  Tab,
-  TabPanel,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
 } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import React from 'react';
 import {
   MdEmail,
-  MdPhotoCamera,
   MdFileDownload,
-  MdLightbulb,
-  MdDescription,
-  MdBrush,
-  MdSpeed,
-  MdSecurity,
-  MdSearch,
-  MdCode,
-  MdAccessibility,
-  MdGrade,
   MdArrowBack,
-  MdKeyboard,
-  MdCompareArrows,
-  MdLock,
-  MdLink,
 } from 'react-icons/md';
-import {useApp} from '../../contexts/app';
+
+import { useApp } from '../../contexts/app';
 
 const ThankYou = () => {
-  const {reportDownloadLink, firstName} = useApp();
-
-  const [loading, setLoading] = React.useState(false);
+  const { reportDownloadLink, firstName } = useApp();
   const router = useRouter();
 
-  const handleDownload = async (e: React.FormEvent) => {
+  const handleDownload = async () => {
     window.open(`${reportDownloadLink}`, '_blank');
   };
 
   const handleBack = () => {
     router.push('/');
   };
-  
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -131,6 +92,7 @@ const ThankYou = () => {
           >
             <Image
               src="/webcatch.png"
+              alt="UX Check Analysis Complete"
               objectFit="cover"
               width="100%"
               height="100%"

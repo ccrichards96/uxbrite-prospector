@@ -1,10 +1,31 @@
 {
   "extends": [
-    "sznm/react",
-    "plugin:react/jsx-runtime",
-    "plugin:@next/next/recommended"
+    "next/core-web-vitals",
+    "plugin:react/jsx-runtime"
   ],
   "rules": {
-    "@next/next/no-document-import-in-page": "off"
-  }
+    // Disable rules that slow down MVP development
+    "no-console": "off",
+    "no-unused-vars": "warn",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "react/prop-types": "off",
+    "react/jsx-props-no-spreading": "off",
+    "react-hooks/exhaustive-deps": "warn",
+    "import/prefer-default-export": "off",
+    "@next/next/no-img-element": "off",
+    "@next/next/no-document-import-in-page": "off",
+    
+    // Keep essential formatting rules at 'warn' level
+    "quotes": ["warn", "single", { "avoidEscape": true }],
+    "semi": ["warn", "always"],
+    "comma-dangle": ["warn", "always-multiline"]
+  },
+  "ignorePatterns": [
+    "node_modules/",
+    ".next/",
+    "out/",
+    "build/",
+    "public/"
+  ]
 }

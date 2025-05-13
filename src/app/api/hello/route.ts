@@ -1,25 +1,27 @@
+import { TemplateHandler } from 'easy-template-x';
+import * as fs from 'fs';
 import { NextResponse } from 'next/server';
 import fetch from 'node-fetch';
 import OpenAI from 'openai';
-import * as fs from 'fs';
-import { TemplateHandler } from 'easy-template-x';
-import { UploadDoc } from '../../../app/fileUploader';
-import { analyzeSEO } from '../../../lib/utils/seoAnalyzer';
-import { analyzeContent } from '../../../lib/utils/contentAnalyzer';
-import { analyzeCompetitors } from '../../../lib/utils/competitorAnalyzer';
 
-const Pusher = require('pusher');
+import { analyzeCompetitors } from '../../../lib/utils/competitorAnalyzer';
+import { analyzeContent } from '../../../lib/utils/contentAnalyzer';
+import { analyzeSEO } from '../../../lib/utils/seoAnalyzer';
+import { UploadDoc } from '../../fileUploader';
+
 const hubspot = require('@hubspot/api-client');
+const Pusher = require('pusher');
+
 const pusher = new Pusher({
-  appId: process.env['PUSHER_APP_ID'],
-  key: process.env['PUSHER_APP_KEY'],
-  secret: process.env['PUSHER_APP_SECRET'],
+  appId: process.env.PUSHER_APP_ID,
+  key: process.env.PUSHER_APP_KEY,
+  secret: process.env.PUSHER_APP_SECRET,
   cluster: 'us2',
   useTLS: true,
 });
 
 const client = new OpenAI({
-  apiKey: process.env['OPENAI_API_KEY'],
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 const chatPrompt = (url: string): string => {
@@ -175,19 +177,18 @@ const marketingStages = {
 };
 
 function unnest(docData: any) {
-  var res: any = {};
+  const res: any = {};
   (function recurse(obj, current) {
-    for (var key in obj) {
-      var value: any = obj[key];
-      var newKey: any = current ? current + '.' + key : key; // joined key with dot
+    for (const key in obj) {
+      const value: any = obj[key];
+      const newKey: any = current ? `${current}.${key}` : key; // joined key with dot
       if (value && typeof value === 'object' && key !== 'brand_logo') {
         if (Array.isArray(value)) {
           res[newKey] = value.map(function (e) {
-            if (typeof e == 'object') {
+            if (typeof e === 'object') {
               return unnest(e);
-            } else {
-              return e;
             }
+            return e;
           });
         } else {
           recurse(value, newKey); // it's a nested object, so do it again
@@ -262,9 +263,14 @@ export const GET = async (req: Request) => {
     const siteAnalyticsData: any = await siteAnalytics.json();
 
     // Get screenshot
-    const screenshotResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/screenshot?url=${encodeURIComponent(url)}`);
-    const screenshotData = await screenshotResponse.json() as { screenshot?: string };
-    const screenshot = screenshotData.screenshot || 'https://via.placeholder.com/300x200';
+    const screenshotResponse = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/screenshot?url=${encodeURIComponent(url)}`
+    );
+    const screenshotData = (await screenshotResponse.json()) as {
+      screenshot?: string;
+    };
+    const screenshot =
+      screenshotData.screenshot || 'https://via.placeholder.com/300x200';
 
     // Get SEO data
     const seoData = await analyzeSEO(url);
@@ -320,14 +326,16 @@ export const GET = async (req: Request) => {
 
     // Get industry metrics instead of individual competitors
     const industryMetrics = await analyzeCompetitors(url);
-    parsedResponse['competitors'] = [{
-      name: "Industry Average",
-      avgMonthlyVisitors: industryMetrics.avgMonthlyVisitors,
-      bounceRate: industryMetrics.bounceRate,
-      conversionRate: industryMetrics.conversionRate,
-      url: "",
-      thumbnail: ""
-    }];
+    parsedResponse.competitors = [
+      {
+        name: 'Industry Average',
+        avgMonthlyVisitors: industryMetrics.avgMonthlyVisitors,
+        bounceRate: industryMetrics.bounceRate,
+        conversionRate: industryMetrics.conversionRate,
+        url: '',
+        thumbnail: '',
+      },
+    ];
 
     parsedResponse.domain = url;
     parsedResponse.screenshot = screenshot;
@@ -336,20 +344,20 @@ export const GET = async (req: Request) => {
 
     parsedResponse = { ...parsedResponse, ...transformedData };
 
-    //console.log(siteAnalyticsData)
+    // console.log(siteAnalyticsData)
     // console.log(siteAnalyticsData["Engagments"])
     if (typeof siteAnalyticsData === 'object' && siteAnalyticsData !== null) {
-      parsedResponse['siteData'].bounceRate =
-        Math.round(siteAnalyticsData['Engagments']?.TimeOnSite * 100) / 100;
-      parsedResponse['siteData'].avgMonthlyVisitors =
+      parsedResponse.siteData.bounceRate =
+        Math.round(siteAnalyticsData.Engagments?.TimeOnSite * 100) / 100;
+      parsedResponse.siteData.avgMonthlyVisitors =
         Object.values(
-          siteAnalyticsData['EstimatedMonthlyVisits'] as Record<string, number>
+          siteAnalyticsData.EstimatedMonthlyVisits as Record<string, number>
         ).reduce((sum: number, visits: number) => sum + visits, 0) /
         Object.keys(
-          siteAnalyticsData['EstimatedMonthlyVisits'] as Record<string, number>
+          siteAnalyticsData.EstimatedMonthlyVisits as Record<string, number>
         ).length;
-      parsedResponse['siteData'].conversionRate =
-        siteAnalyticsData['Engagments']?.ConversionRate;
+      parsedResponse.siteData.conversionRate =
+        siteAnalyticsData.Engagments?.ConversionRate;
     }
 
     pusher.trigger('progress-channel', 'update', {
@@ -362,7 +370,7 @@ export const GET = async (req: Request) => {
       message: 'Finalizing site findings',
     });
 
-    var logo_binary = null; //Buffer.from(capturedShot.screenshot, 'base64');
+    const logo_binary = null; // Buffer.from(capturedShot.screenshot, 'base64');
 
     const documentData = {
       ...parsedResponse,
@@ -392,7 +400,7 @@ export const GET = async (req: Request) => {
       .replace(/\.com$/, '');
     const fileName = `web-report-${scannedDomain}.docx`;
 
-    console.log(doc)
+    console.log(doc);
 
     await UploadDoc(doc, fileName);
 
@@ -411,7 +419,10 @@ export const GET = async (req: Request) => {
     return NextResponse.json({ response: parsedResponse }, { status: 200 });
   } catch (error) {
     console.error('Error analyzing website:', error);
-    return NextResponse.json({ error: 'Failed to analyze website' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to analyze website' },
+      { status: 500 }
+    );
   }
 };
 export async function POST(request: Request) {
