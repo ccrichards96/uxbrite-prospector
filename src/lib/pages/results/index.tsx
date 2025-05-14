@@ -121,86 +121,6 @@ const Results = () => {
     router.push('/');
   };
 
-  // Add missing states and data
-  const [yourSiteData] = React.useState({
-    avgMonthlyVisitors: 10000,
-    bounceRate: 45,
-    conversionRate: 2.5,
-    thumbnail: 'https://via.placeholder.com/300x200',
-    url: 'https://example.com',
-  });
-
-  const [competitors] = React.useState([
-    {
-      name: 'Competitor A',
-      avgMonthlyVisitors: 12000,
-      bounceRate: 40,
-      conversionRate: 3,
-      thumbnail: 'https://via.placeholder.com/300x200',
-      url: 'https://example.com',
-    },
-    {
-      name: 'Competitor B',
-      avgMonthlyVisitors: 9000,
-      bounceRate: 50,
-      conversionRate: 2,
-      thumbnail: 'https://via.placeholder.com/300x200',
-      url: 'https://example.com',
-    },
-    {
-      name: 'Competitor C',
-      avgMonthlyVisitors: 15000,
-      bounceRate: 35,
-      conversionRate: 3.5,
-      thumbnail: 'https://via.placeholder.com/300x200',
-      url: 'https://example.com',
-    },
-    {
-      name: 'Competitor D',
-      avgMonthlyVisitors: 8000,
-      bounceRate: 55,
-      conversionRate: 1.8,
-      thumbnail: 'https://via.placeholder.com/300x200',
-      url: 'https://example.com',
-    },
-    {
-      name: 'Competitor E',
-      avgMonthlyVisitors: 11000,
-      bounceRate: 42,
-      conversionRate: 2.7,
-      thumbnail: 'https://via.placeholder.com/300x200',
-      url: 'https://example.com',
-    },
-  ]);
-
-  const recommendations = [
-    {
-      title: 'Improve Page Load Speed',
-      description:
-        'Optimize images and minify CSS/JS to enhance website performance.',
-    },
-    {
-      title: 'Enhance SEO Strategy',
-      description:
-        'Implement targeted keywords and improve meta descriptions for better search engine visibility.',
-    },
-    {
-      title: 'Upgrade Content Quality',
-      description:
-        'Create more engaging and relevant content to increase user engagement and reduce bounce rate.',
-    },
-    {
-      title: 'Mobile Optimization',
-      description:
-        'Ensure your website is fully responsive and provides a seamless experience on all devices.',
-    },
-    {
-      title: 'Implement SSL Certificate',
-      description:
-        'Secure your website with HTTPS to build trust and improve search engine rankings.',
-    },
-  ];
-
   // New state for form
   const [formData, setFormData] = React.useState({
     firstName: '',
@@ -1144,7 +1064,7 @@ const Results = () => {
                   <Tbody>
                     <Tr backgroundColor="teal.600">
                       <Td>
-                        <Image src={reportData.screenshot} width="300px" />
+                        <Image src={reportData.screenshot} width="300px" alt="Your site screenshot" />
                       </Td>
                       <Td>Your Site</Td>
                       <Td>
@@ -1171,6 +1091,7 @@ const Results = () => {
                               maxW={{ base: '150px', md: '200px' }}
                               height="200px"
                               objectFit="cover"
+                              alt={competitor.name ? `${competitor.name} site screenshot` : ''}
                             />
                           ) : (
                             <Box
