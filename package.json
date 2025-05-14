@@ -31,6 +31,7 @@
     "@hubspot/api-client": "^11.2.0",
     "@netlify/functions": "^2.8.1",
     "@types/axios": "^0.14.4",
+    "aws-amplify": "^6.14.4",
     "cheerio": "^1.0.0",
     "chrome-launcher": "^1.1.2",
     "easy-template-x": "^3.2.1",
@@ -49,12 +50,11 @@
     "pusher-js": "8.4.0-rc2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-icons": "^5.2.1",
-    "typescript": "^5.8.3"
+    "react-icons": "^5.2.1"
   },
   "devDependencies": {
     "@aws-amplify/backend": "^1.16.1",
-    "@aws-amplify/backend-cli": "^1.2.7",
+    "@aws-amplify/backend-cli": "^1.7.2",
     "@commitlint/cli": "^19.3.0",
     "@commitlint/config-conventional": "19.2.2",
     "@commitlint/cz-commitlint": "19.2.0",
@@ -64,8 +64,11 @@
     "@types/node": "^22.14.1",
     "@types/node-fetch": "^2.6.11",
     "@types/react": "^18.3.3",
+    "aws-cdk-lib": "^2.189.1",
     "commitizen": "^4.3.0",
+    "constructs": "^10.4.2",
     "cross-env": "^7.0.3",
+    "esbuild": "^0.25.4",
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.2.4",
     "eslint-config-sznm": "^2.0.3",
@@ -79,7 +82,9 @@
     "prettier": "^3.3.2",
     "puppeteer": "^23.11.1",
     "standard-version": "^9.5.0",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
   },
   "engines": {
     "node": ">=18.18.x",
