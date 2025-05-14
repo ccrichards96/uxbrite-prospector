@@ -12,11 +12,7 @@ import {
 } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import {
-  MdEmail,
-  MdFileDownload,
-  MdArrowBack,
-} from 'react-icons/md';
+import { MdEmail, MdFileDownload, MdArrowBack } from 'react-icons/md';
 
 import { useApp } from '../../contexts/app';
 

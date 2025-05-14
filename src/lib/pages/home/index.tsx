@@ -163,8 +163,8 @@ const Home = () => {
                   Website UX Site Analysis
                 </Heading>
                 <Text fontSize="sm" mt={2}>
-                  Gain insights into your website&apos;s user experience with our
-                  comprehensive analysis tool. We grade websites on their
+                  Gain insights into your website&apos;s user experience with
+                  our comprehensive analysis tool. We grade websites on their
                   design, navigation, and overall user experience, providing
                   actionable recommendations to improve your website&apos;s
                   performance.

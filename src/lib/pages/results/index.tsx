@@ -13,7 +13,6 @@ import {
   Image,
   IconButton,
   VStack,
-  Skeleton,
   FormControl,
   FormLabel,
   FormErrorMessage,

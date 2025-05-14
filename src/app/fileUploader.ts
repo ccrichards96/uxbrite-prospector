@@ -14,8 +14,6 @@ const s3Config = {
 
 export const UploadDoc = async (buffer: Buffer, key: string) => {
   try {
-    const file = buffer;
-    const folderName = key as string;
     const s3 = new S3Client({
       ...s3Config,
     });

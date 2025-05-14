@@ -37,7 +37,7 @@ export async function analyzeSEO(url: string): Promise<SEOData> {
     });
 
     // Navigate to the URL
-    const response = await page.goto(url, {
+    await page.goto(url, {
       waitUntil: 'networkidle0',
       timeout: 30000,
     });
@@ -96,5 +96,6 @@ async function getSearchEngineRanking(url: string): Promise<number> {
   // 3. Or implement your own ranking algorithm based on various factors
 
   // For now, return a random number between 1-100
+  console.log('Fetching search engine ranking for:', url);
   return Math.floor(Math.random() * 100) + 1;
 }
