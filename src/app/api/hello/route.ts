@@ -244,23 +244,23 @@ export const GET = async (req: Request) => {
       message: 'Fetched initial URL',
     });
 
-    const siteAnalyticsURL = `https://data.similarweb.com/api/v1/data?domain=${url.replace('https://', '')}`;
+    // const siteAnalyticsURL = `https://data.similarweb.com/api/v1/data?domain=${url.replace('https://', '')}`;
 
-    const siteAnalytics = await fetch(siteAnalyticsURL, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-      },
-    });
+    // const siteAnalytics = await fetch(siteAnalyticsURL, {
+    //   method: 'GET',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //     'User-Agent':
+    //       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+    //   },
+    // });
 
     pusher.trigger('progress-channel', 'update', {
       progress: 20,
       message: 'Fetched site analytics',
     });
 
-    const siteAnalyticsData: any = await siteAnalytics.json();
+    // const siteAnalyticsData: any = await siteAnalytics.json();
 
     // Get screenshot
     const screenshotResponse = await fetch(
@@ -346,19 +346,19 @@ export const GET = async (req: Request) => {
 
     // console.log(siteAnalyticsData)
     // console.log(siteAnalyticsData["Engagments"])
-    if (typeof siteAnalyticsData === 'object' && siteAnalyticsData !== null) {
-      parsedResponse.siteData.bounceRate =
-        Math.round(siteAnalyticsData.Engagments?.TimeOnSite * 100) / 100;
-      parsedResponse.siteData.avgMonthlyVisitors =
-        Object.values(
-          siteAnalyticsData.EstimatedMonthlyVisits as Record<string, number>
-        ).reduce((sum: number, visits: number) => sum + visits, 0) /
-        Object.keys(
-          siteAnalyticsData.EstimatedMonthlyVisits as Record<string, number>
-        ).length;
-      parsedResponse.siteData.conversionRate =
-        siteAnalyticsData.Engagments?.ConversionRate;
-    }
+    // if (typeof siteAnalyticsData === 'object' && siteAnalyticsData !== null) {
+    //   parsedResponse.siteData.bounceRate =
+    //     Math.round(siteAnalyticsData.Engagments?.TimeOnSite * 100) / 100;
+    //   parsedResponse.siteData.avgMonthlyVisitors =
+    //     Object.values(
+    //       siteAnalyticsData.EstimatedMonthlyVisits as Record<string, number>
+    //     ).reduce((sum: number, visits: number) => sum + visits, 0) /
+    //     Object.keys(
+    //       siteAnalyticsData.EstimatedMonthlyVisits as Record<string, number>
+    //     ).length;
+    //   parsedResponse.siteData.conversionRate =
+    //     siteAnalyticsData.Engagments?.ConversionRate;
+    // }
 
     pusher.trigger('progress-channel', 'update', {
       progress: 70,
