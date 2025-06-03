@@ -307,7 +307,7 @@ export const GET = async (req: Request) => {
     } catch (parseError) {
       console.error('Error parsing JSON:', parseError);
       return NextResponse.json(
-        { error: 'Failed to parse the response' },
+        { error: `Failed to parse the response: ${parseError instanceof Error ? parseError.message : String(parseError)}` },
         { status: 500 }
       );
     }
@@ -420,7 +420,7 @@ export const GET = async (req: Request) => {
   } catch (error) {
     console.error('Error analyzing website:', error);
     return NextResponse.json(
-      { error: 'Failed to analyze website' },
+      { error: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }
