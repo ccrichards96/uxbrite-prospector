@@ -39,7 +39,7 @@ SEO – search engine optimization, can we find the site on google based on rele
 Web Standards – proper use of HTML, CSS, and JavaScript according to W3C guidelines
 Accessibility – How easy and streamlined is it to access your website? Consider all the hundreds of thousands of devices across the globe.
 
-Each area must be scored from 1 (Bad) to 5 (Great) and include a detailed justification (2+ paragraphs).
+Each area must be scored from 1 (Bad) to 5 (Great) and include a detailed justification (2+ paragraphs and at least actionable step the user can take to improve).
 
 Set the design bar high:
   -Modern, responsive design is the minimum expectation, not a bonus.
@@ -273,10 +273,10 @@ export const GET = async (req: Request) => {
       screenshotData.screenshot || 'https://via.placeholder.com/300x200';
 
     // Get SEO data
-    const seoData = await analyzeSEO(url);
+    //const seoData = await analyzeSEO(url);
 
     // Run content analysis
-    const contentData = await analyzeContent(url);
+    //const contentData = await analyzeContent(url);
 
     const chatStream = await client.chat.completions.create({
       messages: [{ role: 'user', content: chatPrompt(url) }],
@@ -313,10 +313,10 @@ export const GET = async (req: Request) => {
     }
 
     // Update the parsed response with actual SEO data
-    parsedResponse.detailedReports.seo = seoData;
+    //parsedResponse.detailedReports.seo = seoData;
 
     // Update the response structure to include content data
-    parsedResponse.detailedReports.content = contentData;
+    //parsedResponse.detailedReports.content = contentData;
 
     // @ts-ignore
     pusher.trigger('progress-channel', 'update', {
@@ -325,17 +325,17 @@ export const GET = async (req: Request) => {
     });
 
     // Get industry metrics instead of individual competitors
-    const industryMetrics = await analyzeCompetitors(url);
-    parsedResponse.competitors = [
-      {
-        name: 'Industry Average',
-        avgMonthlyVisitors: industryMetrics.avgMonthlyVisitors,
-        bounceRate: industryMetrics.bounceRate,
-        conversionRate: industryMetrics.conversionRate,
-        url: '',
-        thumbnail: '',
-      },
-    ];
+    //const industryMetrics = await analyzeCompetitors(url);
+    // parsedResponse.competitors = [
+    //   {
+    //     name: 'Industry Average',
+    //     avgMonthlyVisitors: industryMetrics.avgMonthlyVisitors,
+    //     bounceRate: industryMetrics.bounceRate,
+    //     conversionRate: industryMetrics.conversionRate,
+    //     url: '',
+    //     thumbnail: '',
+    //   },
+    // ];
 
     parsedResponse.domain = url;
     parsedResponse.screenshot = screenshot;

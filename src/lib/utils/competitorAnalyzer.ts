@@ -157,7 +157,7 @@ export async function analyzeCompetitorsDetailed(
     for (const url of competitorUrls) {
       try {
         // Validate URL format
-        if (!url.startsWith('http')) {
+        if (!url.startsWith('http') || !url.startsWith('https') ) {
           console.error(`Invalid URL format: ${url}`);
           continue;
         }
