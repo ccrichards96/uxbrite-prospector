@@ -2,7 +2,7 @@ import { TemplateHandler } from 'easy-template-x';
 import * as fs from 'fs';
 import { NextResponse } from 'next/server';
 import fetch from 'node-fetch';
-import OpenAI from 'openai';
+import Perplexity from '@perplexity-ai/perplexity_ai';
 
 import { analyzeCompetitors } from '../../../lib/utils/competitorAnalyzer';
 import { analyzeContent } from '../../../lib/utils/contentAnalyzer';
@@ -20,8 +20,8 @@ const pusher = new Pusher({
   useTLS: true,
 });
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+const client = new Perplexity({
+  apiKey: process.env.PERPLEXITY_API_KEY,
 });
 
 const chatPrompt = (url: string): string => {
@@ -263,14 +263,14 @@ export const GET = async (req: Request) => {
     // const siteAnalyticsData: any = await siteAnalytics.json();
 
     // Get screenshot
-    const screenshotResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/screenshot?url=${encodeURIComponent(url)}`
-    );
-    const screenshotData = (await screenshotResponse.json()) as {
-      screenshot?: string;
-    };
-    const screenshot =
-      screenshotData.screenshot || 'https://via.placeholder.com/300x200';
+    // const screenshotResponse = await fetch(
+    //   `${process.env.NEXT_PUBLIC_BASE_URL}/api/screenshot?url=${encodeURIComponent(url)}`
+    // );
+    // const screenshotData = (await screenshotResponse.json()) as {
+    //   screenshot?: string;
+    // };
+    // const screenshot =
+    //   screenshotData.screenshot || 'https://via.placeholder.com/300x200';
 
     // Get SEO data
     //const seoData = await analyzeSEO(url);
@@ -280,7 +280,7 @@ export const GET = async (req: Request) => {
 
     const chatStream = await client.chat.completions.create({
       messages: [{ role: 'user', content: chatPrompt(url) }],
-      model: 'gpt-3.5-turbo',
+      model: 'sonar',
       stream: true,
     });
 
@@ -302,10 +302,25 @@ export const GET = async (req: Request) => {
 
     let parsedResponse;
     try {
-      parsedResponse = JSON.parse(responseString);
+      // Clean up the response - Perplexity may wrap JSON in markdown code blocks
+      let cleanedResponse = responseString.trim();
+      
+      // Remove markdown code blocks if present (```json ... ``` or ``` ... ```)
+      if (cleanedResponse.startsWith('```')) {
+        // Remove opening code block (with optional language identifier like 'json')
+        cleanedResponse = cleanedResponse.replace(/^```(?:json)?[\s\n]?/, '');
+        // Remove closing code block
+        cleanedResponse = cleanedResponse.replace(/[\s\n]?```\s*$/, '');
+      }
+      
+      // Trim again after removing code blocks
+      cleanedResponse = cleanedResponse.trim();
+      
+      parsedResponse = JSON.parse(cleanedResponse);
       // console.log('parsed response:', parsedResponse);
     } catch (parseError) {
       console.error('Error parsing JSON:', parseError);
+      console.error('Raw response:', responseString);
       return NextResponse.json(
         { error: `Failed to parse the response: ${parseError instanceof Error ? parseError.message : String(parseError)}` },
         { status: 500 }
@@ -338,7 +353,7 @@ export const GET = async (req: Request) => {
     // ];
 
     parsedResponse.domain = url;
-    parsedResponse.screenshot = screenshot;
+    //parsedResponse.screenshot = screenshot;
 
     const transformedData = transformStages(marketingStages);
 
