@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "turbo": "npm dlx turbo@2.0.1",
-    "build:turbo": "npm turbo run build",
+    "build:turbo": "npm run build",
     "postbuild": "next-sitemap --config next-sitemap.config.js",
     "start": "next start",
     "lint": "next lint",
