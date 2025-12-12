@@ -1,4 +1,14 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "npm run build"
+  "buildCommand": "npm run build",
+  "functions": {
+    "src/app/api/screenshot/route.ts": {
+      "maxDuration": 60,
+      "memory": 1024
+    },
+    "src/app/api/hello/route.ts": {
+      "maxDuration": 120,
+      "memory": 1024
+    }
+  }
 }

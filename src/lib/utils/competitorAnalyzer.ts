@@ -1,6 +1,32 @@
 import axios from 'axios';
+import chromium from '@sparticuz/chromium-min';
 import Perplexity from '@perplexity-ai/perplexity_ai';
 import puppeteer from 'puppeteer-core';
+
+// Chromium executable path for Vercel deployment
+const CHROMIUM_EXECUTABLE =
+  'https://github.com/nicubarbaros/chromium-local-server/raw/main/chromium-v131.0.0-pack.tar';
+
+async function getBrowser() {
+  // For local development, use local Chrome installation
+  if (process.env.NODE_ENV === 'development') {
+    return puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      executablePath:
+        process.env.CHROME_EXECUTABLE_PATH ||
+        'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+    });
+  }
+
+  // For Vercel/production, use @sparticuz/chromium-min
+  return puppeteer.launch({
+    args: chromium.args,
+    defaultViewport: { width: 1200, height: 800 },
+    executablePath: await chromium.executablePath(CHROMIUM_EXECUTABLE),
+    headless: true,
+  });
+}
 
 interface Competitor {
   name: string;
@@ -179,17 +205,12 @@ export async function analyzeCompetitorsDetailed(
 
     // Step 2: Get SimilarWeb data for each competitor
     const competitors: Competitor[] = [];
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-      executablePath:
-        process.env.CHROME_EXECUTABLE_PATH || '/usr/bin/google-chrome',
-    });
+    const browser = await getBrowser();
 
     for (const url of competitorUrls) {
       try {
         // Validate URL format
-        if (!url.startsWith('http') || !url.startsWith('https')) {
+        if (!url.startsWith('http') && !url.startsWith('https')) {
           console.error(`Invalid URL format: ${url}`);
           continue;
         }
