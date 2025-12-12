@@ -1,5 +1,6 @@
 import { TemplateHandler } from 'easy-template-x';
 import * as fs from 'fs';
+import * as path from 'path';
 import { NextResponse } from 'next/server';
 import fetch from 'node-fetch';
 import Perplexity from '@perplexity-ai/perplexity_ai';
@@ -459,15 +460,15 @@ export const GET = async (req: Request) => {
       issues: seoSpiderData.issues,
     } : null;
 
+    pusher.trigger('progress-channel', 'update', {
+      progress: 30,
+      message: 'Performing Full Deep Dive',
+    });
+
     const chatStream = await client.chat.completions.create({
       messages: [{ role: 'user', content: chatPrompt(url, seoDataForPrompt) }],
       model: 'sonar',
       stream: true,
-    });
-
-    pusher.trigger('progress-channel', 'update', {
-      progress: 30,
-      message: 'Performing Full Deep Dive',
     });
 
     let responseString = '';
@@ -684,9 +685,8 @@ export const GET = async (req: Request) => {
     };
 
     // 1. read template file
-    const templateFile = fs.readFileSync(
-      './src/lib/templates/web-report-template.docx'
-    );
+    const templatePath = path.join(process.cwd(), 'src', 'lib', 'templates', 'web-report-template.docx');
+    const templateFile = fs.readFileSync(templatePath);
 
     const handler = new TemplateHandler();
     const flatData = unnest(documentData);

@@ -14,6 +14,10 @@ module.exports = withPWA({
     dirs: ['src'],
     ignoreDuringBuilds: true,
   },
+  // Include template files in the serverless function bundle
+  outputFileTracingIncludes: {
+    '/api/hello': ['./src/lib/templates/**/*'],
+  },
   // Turbopack configuration (for dev)
   turbopack: {
     resolveAlias: {
