@@ -25,8 +25,131 @@ const client = new Perplexity({
   apiKey: process.env.PERPLEXITY_API_KEY,
 });
 
-const chatPrompt = (url: string): string => {
+interface SEODataForPrompt {
+  score: number;
+  meta: {
+    title: string;
+    description: string;
+    keywords: string;
+    viewport: string;
+    robots: string;
+    canonical: string;
+    language: string;
+  };
+  headings: {
+    h1Count: number;
+    hasMultipleH1: boolean;
+    missingH1: boolean;
+  };
+  links: {
+    internalCount: number;
+    externalCount: number;
+    brokenCount: number;
+  };
+  images: {
+    total: number;
+    withAlt: number;
+    withoutAlt: number;
+    missingAltPercentage: number;
+  };
+  technical: {
+    hasRobotsTxt: boolean;
+    hasSitemap: boolean;
+    isHttps: boolean;
+    hasCanonical: boolean;
+    isIndexable: boolean;
+    hasMobileViewport: boolean;
+    hasStructuredData: boolean;
+    httpStatusCode: number;
+  };
+  performance: {
+    loadTime: number;
+    resourceCount: number;
+    totalSize: number;
+    jsFiles: number;
+    cssFiles: number;
+  };
+  content: {
+    wordCount: number;
+    uniqueWords: number;
+    readingTime: number;
+    textToHtmlRatio: number;
+  };
+  issues: Array<{
+    type: string;
+    category: string;
+    message: string;
+  }>;
+}
+
+const chatPrompt = (url: string, seoData?: SEODataForPrompt | null): string => {
+  // Build SEO context section if data is available
+  let seoContext = '';
+  if (seoData) {
+    seoContext = `
+
+=== CRAWLED SEO DATA (Use this real data in your evaluation) ===
+
+Overall SEO Score: ${seoData.score}/100
+
+META TAGS:
+- Title: "${seoData.meta.title}" (${seoData.meta.title?.length || 0} characters)
+- Description: "${seoData.meta.description}" (${seoData.meta.description?.length || 0} characters)
+- Keywords: ${seoData.meta.keywords || 'Not set'}
+- Viewport: ${seoData.meta.viewport || 'Not set'}
+- Robots: ${seoData.meta.robots || 'Not set'}
+- Canonical: ${seoData.meta.canonical || 'Not set'}
+- Language: ${seoData.meta.language || 'Not detected'}
+
+HEADINGS STRUCTURE:
+- H1 Tags: ${seoData.headings.h1Count} ${seoData.headings.hasMultipleH1 ? '(WARNING: Multiple H1s)' : ''} ${seoData.headings.missingH1 ? '(ERROR: Missing H1)' : ''}
+
+LINKS:
+- Internal Links: ${seoData.links.internalCount}
+- External Links: ${seoData.links.externalCount}
+- Broken Links: ${seoData.links.brokenCount} ${seoData.links.brokenCount > 0 ? '(ISSUE)' : '(Good)'}
+
+IMAGES:
+- Total Images: ${seoData.images.total}
+- With Alt Text: ${seoData.images.withAlt}
+- Missing Alt Text: ${seoData.images.withoutAlt} (${seoData.images.missingAltPercentage.toFixed(1)}% missing)
+
+TECHNICAL SEO:
+- HTTPS: ${seoData.technical.isHttps ? 'Yes ✓' : 'No ✗'}
+- Robots.txt: ${seoData.technical.hasRobotsTxt ? 'Present ✓' : 'Missing ✗'}
+- Sitemap: ${seoData.technical.hasSitemap ? 'Found ✓' : 'Not Found ✗'}
+- Canonical Tag: ${seoData.technical.hasCanonical ? 'Set ✓' : 'Not Set ✗'}
+- Indexable: ${seoData.technical.isIndexable ? 'Yes ✓' : 'No ✗'}
+- Mobile Viewport: ${seoData.technical.hasMobileViewport ? 'Configured ✓' : 'Missing ✗'}
+- Structured Data: ${seoData.technical.hasStructuredData ? 'Present ✓' : 'Missing'}
+- HTTP Status: ${seoData.technical.httpStatusCode}
+
+PERFORMANCE METRICS:
+- Page Load Time: ${(seoData.performance.loadTime / 1000).toFixed(2)}s
+- Total Resources: ${seoData.performance.resourceCount}
+- Page Size: ${(seoData.performance.totalSize / 1024).toFixed(0)} KB
+- JavaScript Files: ${seoData.performance.jsFiles}
+- CSS Files: ${seoData.performance.cssFiles}
+
+CONTENT METRICS:
+- Word Count: ${seoData.content.wordCount}
+- Unique Words: ${seoData.content.uniqueWords}
+- Reading Time: ${seoData.content.readingTime} minutes
+- Text-to-HTML Ratio: ${seoData.content.textToHtmlRatio.toFixed(1)}%
+
+DETECTED ISSUES (${seoData.issues.length} total):
+${seoData.issues.slice(0, 10).map(issue => `- [${issue.type.toUpperCase()}] ${issue.category}: ${issue.message}`).join('\n')}
+${seoData.issues.length > 10 ? `... and ${seoData.issues.length - 10} more issues` : ''}
+
+=== END OF CRAWLED DATA ===
+
+IMPORTANT: Use the above crawled data to inform your SEO, Performance, Content, and Web Standards evaluations. This is real data from the website.
+
+`;
+  }
+
   return ` Here is my domain: ${url}
+${seoContext}
 Please assist in a UX Website Audit and is designed to analyze domains and provide a comprehensive report on SEO, content, performance, design, and accessibility. When reviewing a website, it considers the site as a primary digital experience for brands, evaluating it across several key criteria: Beauty, Content, Design, Performance, Security, SEO, Web Standards, and Accessibility. The analysis includes a numerical score for each criterion, ranging from 1 (Bad) to 5 (Great), and a final website grade based on the average score. The GPT emphasizes clarity, detail, and actionable insights, avoiding vague or overly technical language unless necessary. The overall goal is to provide a well-rounded, understandable, and useful audit to help improve the website's user experience and performance. The tone is professional yet light, with a touch of fun to keep the communication engaging and approachable.
 Here is the criteria for grading websites.
 
@@ -315,8 +438,29 @@ export const GET = async (req: Request) => {
     // Run content analysis
     //const contentData = await analyzeContent(url);
 
+    // Prepare SEO data for the prompt
+    const seoDataForPrompt = seoSpiderData ? {
+      score: seoSpiderData.score,
+      meta: seoSpiderData.meta,
+      headings: {
+        h1Count: seoSpiderData.headings.h1Count,
+        hasMultipleH1: seoSpiderData.headings.hasMultipleH1,
+        missingH1: seoSpiderData.headings.missingH1,
+      },
+      links: {
+        internalCount: seoSpiderData.links.internalCount,
+        externalCount: seoSpiderData.links.externalCount,
+        brokenCount: seoSpiderData.links.brokenCount,
+      },
+      images: seoSpiderData.images,
+      technical: seoSpiderData.technical,
+      performance: seoSpiderData.performance,
+      content: seoSpiderData.content,
+      issues: seoSpiderData.issues,
+    } : null;
+
     const chatStream = await client.chat.completions.create({
-      messages: [{ role: 'user', content: chatPrompt(url) }],
+      messages: [{ role: 'user', content: chatPrompt(url, seoDataForPrompt) }],
       model: 'sonar',
       stream: true,
     });
