@@ -23,10 +23,13 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import Pusher from 'pusher-js';
 import React from 'react';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
 import { useApp } from '../../contexts/app';
 
 const Home = () => {
+  const { executeRecaptcha } = useGoogleReCaptcha();
+
   React.useEffect(() => {
     const pusher = new Pusher('42cbe4cb2af6b19119ee', {
       cluster: 'us2',
@@ -53,20 +56,55 @@ const Home = () => {
   const [errorMessage, setErrorMessage] = React.useState('');
   const router = useRouter();
 
+  const isLocalhost = typeof window !== 'undefined' && 
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
+    
     if (!isValidDomain(searchValue)) {
       setErrorMessage('Invalid domain. Please enter a valid domain name.');
       return;
     }
+
     setLoading(true);
-    // Add your logic here to handle the search/analysis
-    const domain = `https://${searchValue.trim()}`;
-    console.log('Analyzing:', domain);
-    // Simulating an async operation
 
     try {
+      // Skip reCAPTCHA only on localhost
+      if (!isLocalhost) {
+        // Execute reCAPTCHA verification
+        if (!executeRecaptcha) {
+          setErrorMessage('reCAPTCHA not loaded. Please try again.');
+          setLoading(false);
+          return;
+        }
+
+        // Get reCAPTCHA token
+        const recaptchaToken = await executeRecaptcha('submit_scan');
+        
+        // Verify reCAPTCHA token on the server
+        const verifyResponse = await fetch('/api/verify-recaptcha', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ token: recaptchaToken }),
+        });
+
+        const verifyData = await verifyResponse.json();
+        
+        if (!verifyData.success) {
+          setErrorMessage('reCAPTCHA verification failed. Please try again.');
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Proceed with the scan
+      const domain = `https://${searchValue.trim()}`;
+      console.log('Analyzing:', domain);
+
       const response = await fetch(`/api/hello?url=${domain}`, {
         method: 'GET',
         headers: {
@@ -82,12 +120,10 @@ const Home = () => {
 
       if (data.error) {
         console.error('API error:', data.error);
+        setErrorMessage('An error occurred during analysis. Please try again.');
         setLoading(false);
-        // Handle the error, e.g., show an error message to the user
-        // You might want to use a state variable or a toast notification here
       } else {
         // Process the API response as needed
-        // For example, you might want to store the result in the app context
         setReportData(data.response);
         setReportDownloadLink(data?.response?.report_url);
         console.log(data?.response?.report_url);
@@ -98,8 +134,8 @@ const Home = () => {
       }
     } catch (error) {
       console.error('Error calling API:', error);
+      setErrorMessage('An error occurred. Please try again.');
       setLoading(false);
-      // Handle the error appropriately, e.g., show an error message to the user
     }
   };
 
