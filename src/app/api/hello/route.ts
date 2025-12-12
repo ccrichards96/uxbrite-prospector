@@ -292,11 +292,25 @@ export const GET = async (req: Request) => {
     let responseString = '';
 
     for await (const chunk of chatStream) {
-      if (chunk.choices[0]?.delta?.content) {
-        if (chunk.choices[0]?.delta?.content === '\n') {
+      const deltaContent = chunk.choices[0]?.delta?.content;
+      if (deltaContent) {
+        // Handle both string and array content types
+        let textContent: string;
+        if (typeof deltaContent === 'string') {
+          textContent = deltaContent;
+        } else if (Array.isArray(deltaContent)) {
+          textContent = deltaContent
+            .filter((c) => c.type === 'text' && 'text' in c)
+            .map((c) => (c as { type: 'text'; text: string }).text)
+            .join('');
+        } else {
           continue;
         }
-        responseString += chunk.choices[0]?.delta?.content;
+
+        if (textContent === '\n') {
+          continue;
+        }
+        responseString += textContent;
       }
     }
 

@@ -25,6 +25,32 @@ interface IndustryMetrics {
   conversionRate: number;
 }
 
+// Helper function to extract text content from Perplexity response
+function extractTextContent(
+  content:
+    | string
+    | Array<{ type: string; text?: string }>
+    | null
+    | undefined
+): string | null {
+  if (!content) return null;
+
+  if (typeof content === 'string') {
+    return content;
+  }
+
+  // Handle array of content chunks - extract text from text chunks
+  if (Array.isArray(content)) {
+    const textChunks = content
+      .filter((chunk) => chunk.type === 'text' && chunk.text)
+      .map((chunk) => chunk.text)
+      .join('');
+    return textChunks || null;
+  }
+
+  return null;
+}
+
 // Helper function to clean Perplexity response
 function cleanPerplexityResponse(content: string): string {
   let cleaned = content.trim();
@@ -67,7 +93,8 @@ export async function analyzeCompetitors(
     });
 
     try {
-      const content = completion.choices[0].message?.content;
+      const rawContent = completion.choices[0].message?.content;
+      const content = extractTextContent(rawContent);
       if (content) {
         const cleanedContent = cleanPerplexityResponse(content);
         const metrics = JSON.parse(cleanedContent);
@@ -130,7 +157,8 @@ export async function analyzeCompetitorsDetailed(
 
     let competitorUrls: string[] = [];
     try {
-      const content = completion.choices[0].message?.content;
+      const rawContent = completion.choices[0].message?.content;
+      const content = extractTextContent(rawContent);
       if (content) {
         const cleanedContent = cleanPerplexityResponse(content);
         const parsed = JSON.parse(cleanedContent);
