@@ -7,6 +7,7 @@ import Perplexity from '@perplexity-ai/perplexity_ai';
 import { analyzeCompetitors } from '../../../lib/utils/competitorAnalyzer';
 import { analyzeContent } from '../../../lib/utils/contentAnalyzer';
 import { analyzeSEO } from '../../../lib/utils/seoAnalyzer';
+import { crawlAndAnalyzeSEO } from '../../../lib/utils/seoSpider';
 import { UploadDoc } from '../../fileUploader';
 
 const hubspot = require('@hubspot/api-client');
@@ -292,6 +293,22 @@ export const GET = async (req: Request) => {
       message: 'Screenshot captured',
     });
 
+    // Run SEO Spider to crawl and analyze the website
+    pusher.trigger('progress-channel', 'update', {
+      progress: 28,
+      message: 'Crawling website for SEO data',
+    });
+
+    let seoSpiderData = null;
+    try {
+      console.log('Starting SEO spider crawl for:', url);
+      seoSpiderData = await crawlAndAnalyzeSEO(url);
+      console.log('SEO spider crawl completed, score:', seoSpiderData.score);
+    } catch (seoSpiderError) {
+      console.error('SEO spider error:', seoSpiderError);
+      // Continue without spider data
+    }
+
     // Get SEO data
     //const seoData = await analyzeSEO(url);
 
@@ -363,8 +380,74 @@ export const GET = async (req: Request) => {
       );
     }
 
-    // Update the parsed response with actual SEO data
-    //parsedResponse.detailedReports.seo = seoData;
+    // Update the parsed response with actual SEO data from spider
+    if (seoSpiderData) {
+      // Merge SEO spider data into the response
+      if (!parsedResponse.detailedReports) {
+        parsedResponse.detailedReports = {};
+      }
+      
+      // Update SEO section with real crawled data
+      parsedResponse.detailedReports.seo = {
+        robotsTxt: seoSpiderData.technical.hasRobotsTxt ? 'Present' : 'Missing',
+        indexable: seoSpiderData.technical.isIndexable,
+        redirects: [], // Would need additional crawl logic for redirects
+        meta: {
+          title: seoSpiderData.meta.title || '',
+          description: seoSpiderData.meta.description || '',
+        },
+        searchEngineRanking: Math.round(seoSpiderData.score / 10), // Convert 0-100 to 0-10
+      };
+
+      // Update content section with real crawled data
+      parsedResponse.detailedReports.content = {
+        grammaticalErrors: 0, // Would need NLP analysis
+        wordCount: seoSpiderData.content.wordCount,
+        uniqueWords: seoSpiderData.content.uniqueWords,
+        images: seoSpiderData.images.total,
+        videos: 0, // Could add video detection
+        backlinks: seoSpiderData.links.externalCount,
+        language: seoSpiderData.meta.language || 'en',
+      };
+
+      // Add comprehensive SEO spider data as a new section
+      // Sanitize nested object arrays to prevent React rendering errors
+      parsedResponse.seoSpiderData = {
+        score: seoSpiderData.score,
+        meta: seoSpiderData.meta,
+        headings: {
+          h1: seoSpiderData.headings.h1,
+          h2: seoSpiderData.headings.h2,
+          h3: seoSpiderData.headings.h3,
+          h4: seoSpiderData.headings.h4,
+          h5: seoSpiderData.headings.h5,
+          h6: seoSpiderData.headings.h6,
+          h1Count: seoSpiderData.headings.h1Count,
+          hasMultipleH1: seoSpiderData.headings.hasMultipleH1,
+          missingH1: seoSpiderData.headings.missingH1,
+        },
+        links: {
+          internalCount: seoSpiderData.links.internalCount,
+          externalCount: seoSpiderData.links.externalCount,
+          brokenCount: seoSpiderData.links.brokenCount,
+          nofollowCount: seoSpiderData.links.nofollowCount,
+          // Convert object arrays to simple string arrays for frontend
+          broken: seoSpiderData.links.broken,
+        },
+        images: {
+          total: seoSpiderData.images.total,
+          withAlt: seoSpiderData.images.withAlt,
+          withoutAlt: seoSpiderData.images.withoutAlt,
+          missingAltPercentage: seoSpiderData.images.missingAltPercentage,
+        },
+        technical: seoSpiderData.technical,
+        performance: seoSpiderData.performance,
+        content: seoSpiderData.content,
+        issues: seoSpiderData.issues,
+      };
+
+      console.log('SEO spider data merged into response');
+    }
 
     // Update the response structure to include content data
     //parsedResponse.detailedReports.content = contentData;

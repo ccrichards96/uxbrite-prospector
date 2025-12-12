@@ -583,6 +583,27 @@ const Results = () => {
             <TabPanel>
               <Box>
                 <Flex direction="column" gap={4}>
+                  {/* SEO Spider Score */}
+                  {reportData.seoSpiderData && (
+                    <Box bg="blue.50" p={4} borderRadius="md" mb={4}>
+                      <Flex justify="space-between" align="center">
+                        <Box>
+                          <Text fontWeight="bold" fontSize="lg">SEO Health Score</Text>
+                          <Text color="gray.600">Based on real-time crawl analysis</Text>
+                        </Box>
+                        <Box textAlign="center">
+                          <Text fontSize="3xl" fontWeight="bold" color={
+                            reportData.seoSpiderData.score >= 80 ? 'green.500' :
+                            reportData.seoSpiderData.score >= 60 ? 'yellow.500' :
+                            reportData.seoSpiderData.score >= 40 ? 'orange.500' : 'red.500'
+                          }>
+                            {reportData.seoSpiderData.score}/100
+                          </Text>
+                        </Box>
+                      </Flex>
+                    </Box>
+                  )}
+
                   <Flex>
                     <Box flex="1">
                       <Text fontWeight="bold">Robots.txt</Text>
@@ -629,10 +650,10 @@ const Results = () => {
                     <Box flex="1">
                       <Text fontWeight="bold">Redirects</Text>
                       <Text>
-                        {reportData.detailedReports.seo.redirects
-                          .slice(0, 3)
-                          .join(', ')}
-                        {reportData.detailedReports.seo.redirects.length > 3 &&
+                        {reportData.detailedReports.seo.redirects?.length > 0
+                          ? reportData.detailedReports.seo.redirects.slice(0, 3).join(', ')
+                          : 'None detected'}
+                        {reportData.detailedReports.seo.redirects?.length > 3 &&
                           ` (and ${reportData.detailedReports.seo.redirects.length - 3} more)`}
                       </Text>
                     </Box>
@@ -640,18 +661,16 @@ const Results = () => {
                       <Text>Optimal: Minimal (0-2)</Text>
                       <Icon
                         as={
-                          reportData.detailedReports.seo.redirects.length <= 2
+                          (reportData.detailedReports.seo.redirects?.length || 0) <= 2
                             ? MdCheckCircle
-                            : reportData.detailedReports.seo.redirects.length <=
-                                5
+                            : (reportData.detailedReports.seo.redirects?.length || 0) <= 5
                               ? MdWarning
                               : MdCancel
                         }
                         color={
-                          reportData.detailedReports.seo.redirects.length <= 2
+                          (reportData.detailedReports.seo.redirects?.length || 0) <= 2
                             ? 'green.500'
-                            : reportData.detailedReports.seo.redirects.length <=
-                                5
+                            : (reportData.detailedReports.seo.redirects?.length || 0) <= 5
                               ? 'yellow.500'
                               : 'red.500'
                         }
@@ -662,11 +681,11 @@ const Results = () => {
                     <Box flex="1">
                       <Text fontWeight="bold">Meta</Text>
                       <Text>
-                        Title: {reportData.detailedReports.seo.meta.title}
+                        Title: {reportData.detailedReports.seo.meta.title || 'Not set'}
                       </Text>
                       <Text>
                         Description:{' '}
-                        {reportData.detailedReports.seo.meta.description}
+                        {reportData.detailedReports.seo.meta.description || 'Not set'}
                       </Text>
                     </Box>
                     <Box textAlign="right">
@@ -676,44 +695,28 @@ const Results = () => {
                       </Text>
                       <Icon
                         as={
-                          reportData.detailedReports.seo.meta.title.length >=
-                            50 &&
-                          reportData.detailedReports.seo.meta.title.length <=
-                            60 &&
-                          reportData.detailedReports.seo.meta.description
-                            .length >= 150 &&
-                          reportData.detailedReports.seo.meta.description
-                            .length <= 160
+                          (reportData.detailedReports.seo.meta.title?.length || 0) >= 50 &&
+                          (reportData.detailedReports.seo.meta.title?.length || 0) <= 60 &&
+                          (reportData.detailedReports.seo.meta.description?.length || 0) >= 150 &&
+                          (reportData.detailedReports.seo.meta.description?.length || 0) <= 160
                             ? MdCheckCircle
-                            : reportData.detailedReports.seo.meta.title
-                                  .length >= 40 &&
-                                reportData.detailedReports.seo.meta.title
-                                  .length <= 70 &&
-                                reportData.detailedReports.seo.meta.description
-                                  .length >= 140 &&
-                                reportData.detailedReports.seo.meta.description
-                                  .length <= 170
+                            : (reportData.detailedReports.seo.meta.title?.length || 0) >= 40 &&
+                                (reportData.detailedReports.seo.meta.title?.length || 0) <= 70 &&
+                                (reportData.detailedReports.seo.meta.description?.length || 0) >= 140 &&
+                                (reportData.detailedReports.seo.meta.description?.length || 0) <= 170
                               ? MdWarning
                               : MdCancel
                         }
                         color={
-                          reportData.detailedReports.seo.meta.title.length >=
-                            50 &&
-                          reportData.detailedReports.seo.meta.title.length <=
-                            60 &&
-                          reportData.detailedReports.seo.meta.description
-                            .length >= 150 &&
-                          reportData.detailedReports.seo.meta.description
-                            .length <= 160
+                          (reportData.detailedReports.seo.meta.title?.length || 0) >= 50 &&
+                          (reportData.detailedReports.seo.meta.title?.length || 0) <= 60 &&
+                          (reportData.detailedReports.seo.meta.description?.length || 0) >= 150 &&
+                          (reportData.detailedReports.seo.meta.description?.length || 0) <= 160
                             ? 'green.500'
-                            : reportData.detailedReports.seo.meta.title
-                                  .length >= 40 &&
-                                reportData.detailedReports.seo.meta.title
-                                  .length <= 70 &&
-                                reportData.detailedReports.seo.meta.description
-                                  .length >= 140 &&
-                                reportData.detailedReports.seo.meta.description
-                                  .length <= 170
+                            : (reportData.detailedReports.seo.meta.title?.length || 0) >= 40 &&
+                                (reportData.detailedReports.seo.meta.title?.length || 0) <= 70 &&
+                                (reportData.detailedReports.seo.meta.description?.length || 0) >= 140 &&
+                                (reportData.detailedReports.seo.meta.description?.length || 0) <= 170
                               ? 'yellow.500'
                               : 'red.500'
                         }
@@ -751,6 +754,141 @@ const Results = () => {
                       />
                     </Box>
                   </Flex>
+
+                  {/* SEO Spider Extended Data */}
+                  {reportData.seoSpiderData && (
+                    <>
+                      <Box borderTop="1px" borderColor="gray.200" pt={4} mt={4}>
+                        <Text fontWeight="bold" fontSize="lg" mb={3}>Technical SEO Analysis</Text>
+                        <Grid templateColumns="repeat(2, 1fr)" gap={4}>
+                          <Flex>
+                            <Box flex="1">
+                              <Text fontWeight="bold">HTTPS</Text>
+                              <Text>{reportData.seoSpiderData.technical.isHttps ? 'Enabled' : 'Not Enabled'}</Text>
+                            </Box>
+                            <Icon as={reportData.seoSpiderData.technical.isHttps ? MdCheckCircle : MdCancel} color={reportData.seoSpiderData.technical.isHttps ? 'green.500' : 'red.500'} />
+                          </Flex>
+                          <Flex>
+                            <Box flex="1">
+                              <Text fontWeight="bold">Sitemap</Text>
+                              <Text>{reportData.seoSpiderData.technical.hasSitemap ? 'Found' : 'Not Found'}</Text>
+                            </Box>
+                            <Icon as={reportData.seoSpiderData.technical.hasSitemap ? MdCheckCircle : MdWarning} color={reportData.seoSpiderData.technical.hasSitemap ? 'green.500' : 'yellow.500'} />
+                          </Flex>
+                          <Flex>
+                            <Box flex="1">
+                              <Text fontWeight="bold">Mobile Viewport</Text>
+                              <Text>{reportData.seoSpiderData.technical.hasMobileViewport ? 'Configured' : 'Missing'}</Text>
+                            </Box>
+                            <Icon as={reportData.seoSpiderData.technical.hasMobileViewport ? MdCheckCircle : MdCancel} color={reportData.seoSpiderData.technical.hasMobileViewport ? 'green.500' : 'red.500'} />
+                          </Flex>
+                          <Flex>
+                            <Box flex="1">
+                              <Text fontWeight="bold">Structured Data</Text>
+                              <Text>{reportData.seoSpiderData.technical.hasStructuredData ? 'Present' : 'Missing'}</Text>
+                            </Box>
+                            <Icon as={reportData.seoSpiderData.technical.hasStructuredData ? MdCheckCircle : MdWarning} color={reportData.seoSpiderData.technical.hasStructuredData ? 'green.500' : 'yellow.500'} />
+                          </Flex>
+                          <Flex>
+                            <Box flex="1">
+                              <Text fontWeight="bold">Canonical URL</Text>
+                              <Text>{reportData.seoSpiderData.technical.hasCanonical ? 'Set' : 'Not Set'}</Text>
+                            </Box>
+                            <Icon as={reportData.seoSpiderData.technical.hasCanonical ? MdCheckCircle : MdWarning} color={reportData.seoSpiderData.technical.hasCanonical ? 'green.500' : 'yellow.500'} />
+                          </Flex>
+                          <Flex>
+                            <Box flex="1">
+                              <Text fontWeight="bold">HTTP Status</Text>
+                              <Text>{reportData.seoSpiderData.technical.httpStatusCode}</Text>
+                            </Box>
+                            <Icon as={reportData.seoSpiderData.technical.httpStatusCode === 200 ? MdCheckCircle : MdWarning} color={reportData.seoSpiderData.technical.httpStatusCode === 200 ? 'green.500' : 'yellow.500'} />
+                          </Flex>
+                        </Grid>
+                      </Box>
+
+                      <Box borderTop="1px" borderColor="gray.200" pt={4} mt={2}>
+                        <Text fontWeight="bold" fontSize="lg" mb={3}>Link Analysis</Text>
+                        <Grid templateColumns="repeat(4, 1fr)" gap={4}>
+                          <Box textAlign="center" p={3} bg="gray.50" borderRadius="md">
+                            <Text fontSize="2xl" fontWeight="bold">{reportData.seoSpiderData.links.internalCount}</Text>
+                            <Text fontSize="sm" color="gray.600">Internal Links</Text>
+                          </Box>
+                          <Box textAlign="center" p={3} bg="gray.50" borderRadius="md">
+                            <Text fontSize="2xl" fontWeight="bold">{reportData.seoSpiderData.links.externalCount}</Text>
+                            <Text fontSize="sm" color="gray.600">External Links</Text>
+                          </Box>
+                          <Box textAlign="center" p={3} bg={reportData.seoSpiderData.links.brokenCount > 0 ? 'red.50' : 'gray.50'} borderRadius="md">
+                            <Text fontSize="2xl" fontWeight="bold" color={reportData.seoSpiderData.links.brokenCount > 0 ? 'red.500' : 'inherit'}>{reportData.seoSpiderData.links.brokenCount}</Text>
+                            <Text fontSize="sm" color="gray.600">Broken Links</Text>
+                          </Box>
+                          <Box textAlign="center" p={3} bg="gray.50" borderRadius="md">
+                            <Text fontSize="2xl" fontWeight="bold">{reportData.seoSpiderData.links.nofollowCount}</Text>
+                            <Text fontSize="sm" color="gray.600">Nofollow Links</Text>
+                          </Box>
+                        </Grid>
+                      </Box>
+
+                      <Box borderTop="1px" borderColor="gray.200" pt={4} mt={2}>
+                        <Text fontWeight="bold" fontSize="lg" mb={3}>Headings Structure</Text>
+                        <Grid templateColumns="repeat(3, 1fr)" gap={2}>
+                          <Badge colorScheme={reportData.seoSpiderData.headings.h1Count === 1 ? 'green' : reportData.seoSpiderData.headings.h1Count === 0 ? 'red' : 'yellow'} p={2} textAlign="center">
+                            H1: {reportData.seoSpiderData.headings.h1Count}
+                          </Badge>
+                          <Badge colorScheme="blue" p={2} textAlign="center">H2: {reportData.seoSpiderData.headings.h2.length}</Badge>
+                          <Badge colorScheme="blue" p={2} textAlign="center">H3: {reportData.seoSpiderData.headings.h3.length}</Badge>
+                        </Grid>
+                        {reportData.seoSpiderData.headings.h1.length > 0 && (
+                          <Box mt={2}>
+                            <Text fontSize="sm" color="gray.600">H1 Content: {reportData.seoSpiderData.headings.h1[0]}</Text>
+                          </Box>
+                        )}
+                      </Box>
+
+                      <Box borderTop="1px" borderColor="gray.200" pt={4} mt={2}>
+                        <Text fontWeight="bold" fontSize="lg" mb={3}>Image Analysis</Text>
+                        <Grid templateColumns="repeat(3, 1fr)" gap={4}>
+                          <Box textAlign="center" p={3} bg="gray.50" borderRadius="md">
+                            <Text fontSize="2xl" fontWeight="bold">{reportData.seoSpiderData.images.total}</Text>
+                            <Text fontSize="sm" color="gray.600">Total Images</Text>
+                          </Box>
+                          <Box textAlign="center" p={3} bg="green.50" borderRadius="md">
+                            <Text fontSize="2xl" fontWeight="bold" color="green.500">{reportData.seoSpiderData.images.withAlt}</Text>
+                            <Text fontSize="sm" color="gray.600">With Alt Text</Text>
+                          </Box>
+                          <Box textAlign="center" p={3} bg={reportData.seoSpiderData.images.withoutAlt > 0 ? 'red.50' : 'gray.50'} borderRadius="md">
+                            <Text fontSize="2xl" fontWeight="bold" color={reportData.seoSpiderData.images.withoutAlt > 0 ? 'red.500' : 'inherit'}>{reportData.seoSpiderData.images.withoutAlt}</Text>
+                            <Text fontSize="sm" color="gray.600">Missing Alt Text</Text>
+                          </Box>
+                        </Grid>
+                      </Box>
+
+                      {/* SEO Issues */}
+                      {reportData.seoSpiderData.issues.length > 0 && (
+                        <Box borderTop="1px" borderColor="gray.200" pt={4} mt={2}>
+                          <Text fontWeight="bold" fontSize="lg" mb={3}>SEO Issues Found ({reportData.seoSpiderData.issues.length})</Text>
+                          <VStack align="stretch" spacing={2}>
+                            {reportData.seoSpiderData.issues.slice(0, 5).map((issue, index) => (
+                              <Box key={index} p={3} bg={issue.type === 'error' ? 'red.50' : issue.type === 'warning' ? 'yellow.50' : 'blue.50'} borderRadius="md" borderLeft="4px" borderColor={issue.type === 'error' ? 'red.500' : issue.type === 'warning' ? 'yellow.500' : 'blue.500'}>
+                                <Flex justify="space-between" align="start">
+                                  <Box>
+                                    <Text fontWeight="bold">{issue.category}</Text>
+                                    <Text fontSize="sm">{issue.message}</Text>
+                                    <Text fontSize="xs" color="gray.600" mt={1}>{issue.recommendation}</Text>
+                                  </Box>
+                                  <Badge colorScheme={issue.type === 'error' ? 'red' : issue.type === 'warning' ? 'yellow' : 'blue'}>{issue.type}</Badge>
+                                </Flex>
+                              </Box>
+                            ))}
+                            {reportData.seoSpiderData.issues.length > 5 && (
+                              <Text fontSize="sm" color="gray.500" textAlign="center">
+                                And {reportData.seoSpiderData.issues.length - 5} more issues...
+                              </Text>
+                            )}
+                          </VStack>
+                        </Box>
+                      )}
+                    </>
+                  )}
                 </Flex>
               </Box>
             </TabPanel>
@@ -879,7 +1017,6 @@ const Results = () => {
                   </Flex>
                 </Flex>
               </Box>
-              <Text>Performance content goes here.</Text>
             </TabPanel>
             <TabPanel>
               <Box>
@@ -920,12 +1057,12 @@ const Results = () => {
                       </Text>
                     </Box>
                     <Flex alignItems="center">
-                      <Text mr={2}>300-1000</Text>
-                      {reportData.detailedReports.content.wordCount >= 300 &&
-                      reportData.detailedReports.content.wordCount <= 1000 ? (
+                      <Text mr={2}>500-3000</Text>
+                      {reportData.detailedReports.content.wordCount >= 500 &&
+                      reportData.detailedReports.content.wordCount <= 3000 ? (
                         <Icon as={MdCheckCircle} color="green.500" />
                       ) : reportData.detailedReports.content.wordCount >
-                        1000 ? (
+                        3000 ? (
                         <Icon as={MdWarning} color="yellow.500" />
                       ) : (
                         <Icon as={MdCancel} color="red.500" />
@@ -944,12 +1081,12 @@ const Results = () => {
                       </Text>
                     </Box>
                     <Flex alignItems="center">
-                      <Text mr={2}>100-300</Text>
-                      {reportData.detailedReports.content.uniqueWords >= 100 &&
-                      reportData.detailedReports.content.uniqueWords <= 300 ? (
+                      <Text mr={2}>200-1000</Text>
+                      {reportData.detailedReports.content.uniqueWords >= 200 &&
+                      reportData.detailedReports.content.uniqueWords <= 1000 ? (
                         <Icon as={MdCheckCircle} color="green.500" />
                       ) : reportData.detailedReports.content.uniqueWords >
-                        300 ? (
+                        1000 ? (
                         <Icon as={MdWarning} color="yellow.500" />
                       ) : (
                         <Icon as={MdCancel} color="red.500" />

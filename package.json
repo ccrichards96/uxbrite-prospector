@@ -4,7 +4,7 @@
   "private": true,
   "author": "ccrichards96",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbo",
     "build": "next build",
     "turbo": "npm dlx turbo@2.0.1",
     "build:turbo": "npm run build",

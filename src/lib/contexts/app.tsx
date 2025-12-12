@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 // contexts/app.ts
 
 'use client';
@@ -72,6 +73,86 @@ interface ReportData {
     title: string;
     description: string;
   }>;
+  seoSpiderData?: {
+    score: number;
+    meta: {
+      title: string;
+      description: string;
+      keywords: string;
+      viewport: string;
+      robots: string;
+      canonical: string;
+      ogTitle: string;
+      ogDescription: string;
+      ogImage: string;
+      twitterCard: string;
+      language: string;
+    };
+    headings: {
+      h1: string[];
+      h2: string[];
+      h3: string[];
+      h4: string[];
+      h5: string[];
+      h6: string[];
+      h1Count: number;
+      hasMultipleH1: boolean;
+      missingH1: boolean;
+    };
+    links: {
+      internalCount: number;
+      externalCount: number;
+      brokenCount: number;
+      nofollowCount: number;
+      broken: string[];
+    };
+    images: {
+      total: number;
+      withAlt: number;
+      withoutAlt: number;
+      missingAltPercentage: number;
+    };
+    technical: {
+      hasRobotsTxt: boolean;
+      robotsTxtContent: string;
+      hasSitemap: boolean;
+      sitemapUrl: string;
+      isHttps: boolean;
+      hasCanonical: boolean;
+      isIndexable: boolean;
+      hasMobileViewport: boolean;
+      hasStructuredData: boolean;
+      structuredDataTypes: string[];
+      httpStatusCode: number;
+      redirectChain: string[];
+      contentType: string;
+    };
+    performance: {
+      loadTime: number;
+      domContentLoaded: number;
+      firstPaint: number;
+      firstContentfulPaint: number;
+      resourceCount: number;
+      totalSize: number;
+      jsFiles: number;
+      cssFiles: number;
+      imageFiles: number;
+      fontFiles: number;
+    };
+    content: {
+      wordCount: number;
+      uniqueWords: number;
+      readingTime: number;
+      paragraphCount: number;
+      textToHtmlRatio: number;
+    };
+    issues: Array<{
+      type: 'error' | 'warning' | 'info';
+      category: string;
+      message: string;
+      recommendation: string;
+    }>;
+  };
 }
 
 const initialReportData: ReportData = {
