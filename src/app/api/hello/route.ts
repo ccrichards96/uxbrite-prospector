@@ -367,14 +367,32 @@ export const GET = async (req: Request) => {
       // Trim again after removing code blocks
       cleanedResponse = cleanedResponse.trim();
 
+      // Try to find valid JSON object boundaries
+      const jsonStart = cleanedResponse.indexOf('{');
+      const jsonEnd = cleanedResponse.lastIndexOf('}');
+      
+      if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+        cleanedResponse = cleanedResponse.substring(jsonStart, jsonEnd + 1);
+      }
+
+      // Fix common JSON issues
+      // Remove trailing commas before closing brackets/braces
+      cleanedResponse = cleanedResponse.replace(/,(\s*[}\]])/g, '$1');
+      
+      // Fix unescaped newlines in strings (common AI output issue)
+      cleanedResponse = cleanedResponse.replace(/(?<!\\)\n(?=[^"]*"[^"]*$)/gm, '\\n');
+
       parsedResponse = JSON.parse(cleanedResponse);
       // console.log('parsed response:', parsedResponse);
     } catch (parseError) {
       console.error('Error parsing JSON:', parseError);
-      console.error('Raw response:', responseString);
+      console.error('Raw response length:', responseString.length);
+      console.error('Raw response (first 500 chars):', responseString.substring(0, 500));
+      console.error('Raw response (last 500 chars):', responseString.substring(responseString.length - 500));
       return NextResponse.json(
         {
           error: `Failed to parse the response: ${parseError instanceof Error ? parseError.message : String(parseError)}`,
+          rawResponsePreview: responseString.substring(0, 1000),
         },
         { status: 500 }
       );
@@ -543,9 +561,11 @@ export const GET = async (req: Request) => {
       message: 'Analysis complete',
     });
 
+    const bucketName = process.env.MAIN_AWS_BUCKET_NAME;
+    const region = process.env.MAIN_AWS_REGION_US;
     parsedResponse = {
       ...parsedResponse,
-      report_url: `https://ux-prospector.s3.us-east-2.amazonaws.com/${fileName}`,
+      report_url: `https://${bucketName}.s3.${region}.amazonaws.com/${fileName}`,
     };
 
     // console.log(parsedResponse);

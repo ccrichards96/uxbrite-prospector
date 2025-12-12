@@ -24,7 +24,8 @@ export const UploadDoc = async (buffer: Buffer, key: string) => {
       Body: buffer,
       ACL: 'public-read',
       CacheControl: 'no-cache',
-      ContentType: 'officedocument.wordprocessingml.document',
+      ContentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      ContentDisposition: 'attachment',
     });
 
     console.log(`Uploading file to S3 - ${key}`);

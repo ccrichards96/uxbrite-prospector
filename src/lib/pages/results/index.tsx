@@ -1190,7 +1190,6 @@ const Results = () => {
                 <Table variant="simple">
                   <Thead>
                     <Tr>
-                      <Th>Thumbnail</Th>
                       <Th>Website</Th>
                       <Th>Avg. Monthly Visitors</Th>
                       <Th>Bounce Rate</Th>
@@ -1200,13 +1199,6 @@ const Results = () => {
                   </Thead>
                   <Tbody>
                     <Tr backgroundColor="teal.600">
-                      <Td>
-                        <Image
-                          src={reportData.screenshot}
-                          width="300px"
-                          alt="Your site screenshot"
-                        />
-                      </Td>
                       <Td>Your Site</Td>
                       <Td>
                         {reportData.siteData.avgMonthlyVisitors.toLocaleString()}
@@ -1224,40 +1216,6 @@ const Results = () => {
                     </Tr>
                     {reportData.competitors.map((competitor, index) => (
                       <Tr key={index}>
-                        <Td>
-                          {competitor.thumbnail ? (
-                            <Image
-                              src={competitor.thumbnail}
-                              width="300px"
-                              maxW={{ base: '150px', md: '200px' }}
-                              height="200px"
-                              objectFit="cover"
-                              alt={
-                                competitor.name
-                                  ? `${competitor.name} site screenshot`
-                                  : ''
-                              }
-                            />
-                          ) : (
-                            <Box
-                              width={{ base: '150px', md: '200px' }}
-                              height="200px"
-                              display="flex"
-                              alignItems="center"
-                              justifyContent="center"
-                              bg="gray.50"
-                              borderRadius="md"
-                              borderWidth="1px"
-                              borderColor="gray.200"
-                            >
-                              <Icon
-                                as={FaBuilding}
-                                boxSize={{ base: 8, md: 12 }}
-                                color="gray.400"
-                              />
-                            </Box>
-                          )}
-                        </Td>
                         <Td>{competitor.name}</Td>
                         <Td>
                           {competitor.avgMonthlyVisitors.toLocaleString()}

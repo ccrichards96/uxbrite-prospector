@@ -1,6 +1,6 @@
 import type { ThemeConfig } from '@chakra-ui/react';
 
-export const config: ThemeConfig = {
+export const themeConfig: ThemeConfig = {
   initialColorMode: 'system',
   disableTransitionOnChange: false,
 };

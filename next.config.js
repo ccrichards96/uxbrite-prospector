@@ -5,6 +5,8 @@ const withPWA = require('next-pwa')({
   // to re-generate manifest.json, you can visit https://tomitm.github.io/appmanifest/
 });
 
+const path = require('path');
+
 /** @type {import('next').NextConfig} */
 module.exports = withPWA({
   reactStrictMode: false,
@@ -12,10 +14,17 @@ module.exports = withPWA({
     dirs: ['src'],
     ignoreDuringBuilds: true,
   },
+  // Turbopack configuration (for dev)
+  turbopack: {
+    resolveAlias: {
+      '~': path.resolve(__dirname, 'src'),
+    },
+  },
+  // Webpack configuration (for build)
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
-      '~': require('path').resolve(__dirname, 'src'),
+      '~': path.resolve(__dirname, 'src'),
     };
     return config;
   },
