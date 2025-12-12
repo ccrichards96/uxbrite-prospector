@@ -226,6 +226,10 @@ export const GET = async (req: Request) => {
   const { searchParams } = new URL(req.url);
   const url = searchParams.get('url');
 
+  // Get the base URL from the request for internal API calls
+  const requestUrl = new URL(req.url);
+  const baseUrl = `${requestUrl.protocol}//${requestUrl.host}`;
+
   if (!url) {
     return NextResponse.json(
       { error: 'URL parameter is required' },
@@ -257,20 +261,36 @@ export const GET = async (req: Request) => {
 
     pusher.trigger('progress-channel', 'update', {
       progress: 20,
-      message: 'Fetched site analytics',
+      message: 'Capturing website screenshot',
     });
 
-    // const siteAnalyticsData: any = await siteAnalytics.json();
-
     // Get screenshot
-    // const screenshotResponse = await fetch(
-    //   `${process.env.NEXT_PUBLIC_BASE_URL}/api/screenshot?url=${encodeURIComponent(url)}`
-    // );
-    // const screenshotData = (await screenshotResponse.json()) as {
-    //   screenshot?: string;
-    // };
-    // const screenshot =
-    //   screenshotData.screenshot || 'https://via.placeholder.com/300x200';
+    let screenshot = 'https://via.placeholder.com/1280x800?text=Screenshot+Unavailable';
+    try {
+      const screenshotUrl = `${baseUrl}/api/screenshot?url=${encodeURIComponent(url)}`;
+      console.log('Fetching screenshot from:', screenshotUrl);
+      
+      const screenshotResponse = await fetch(screenshotUrl, {
+        signal: AbortSignal.timeout(50000), // 50 second timeout
+      });
+      if (screenshotResponse.ok) {
+        const screenshotData = (await screenshotResponse.json()) as {
+          screenshot?: string;
+        };
+        screenshot = screenshotData.screenshot || screenshot;
+        console.log('Screenshot captured successfully');
+      } else {
+        console.error('Screenshot API returned error:', screenshotResponse.status);
+      }
+    } catch (screenshotError) {
+      console.error('Error capturing screenshot:', screenshotError);
+      // Continue with placeholder if screenshot fails
+    }
+
+    pusher.trigger('progress-channel', 'update', {
+      progress: 25,
+      message: 'Screenshot captured',
+    });
 
     // Get SEO data
     //const seoData = await analyzeSEO(url);
@@ -369,7 +389,7 @@ export const GET = async (req: Request) => {
     // ];
 
     parsedResponse.domain = url;
-    //parsedResponse.screenshot = screenshot;
+    parsedResponse.screenshot = screenshot;
 
     const transformedData = transformStages(marketingStages);
 

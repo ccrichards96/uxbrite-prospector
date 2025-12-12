@@ -4,8 +4,9 @@ import Perplexity from '@perplexity-ai/perplexity_ai';
 import puppeteer from 'puppeteer-core';
 
 // Chromium executable path for Vercel deployment
+// Using the official Sparticuz chromium releases
 const CHROMIUM_EXECUTABLE =
-  'https://github.com/nicubarbaros/chromium-local-server/raw/main/chromium-v131.0.0-pack.tar';
+  'https://github.com/Sparticuz/chromium/releases/download/v131.0.0/chromium-v131.0.0-pack.tar';
 
 async function getBrowser() {
   // For local development, use local Chrome installation
@@ -21,7 +22,11 @@ async function getBrowser() {
 
   // For Vercel/production, use @sparticuz/chromium-min
   return puppeteer.launch({
-    args: chromium.args,
+    args: [
+      ...chromium.args,
+      '--hide-scrollbars',
+      '--disable-web-security',
+    ],
     defaultViewport: { width: 1200, height: 800 },
     executablePath: await chromium.executablePath(CHROMIUM_EXECUTABLE),
     headless: true,
