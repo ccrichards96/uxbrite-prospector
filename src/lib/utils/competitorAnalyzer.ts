@@ -1,5 +1,5 @@
 import axios from 'axios';
-import OpenAI from 'openai';
+import Perplexity from '@perplexity-ai/perplexity_ai';
 import puppeteer from 'puppeteer-core';
 
 interface Competitor {
@@ -25,18 +25,28 @@ interface IndustryMetrics {
   conversionRate: number;
 }
 
+// Helper function to clean Perplexity response
+function cleanPerplexityResponse(content: string): string {
+  let cleaned = content.trim();
+  if (cleaned.startsWith('```')) {
+    cleaned = cleaned.replace(/^```(?:json)?[\s\n]?/, '');
+    cleaned = cleaned.replace(/[\s\n]?```\s*$/, '');
+  }
+  return cleaned.trim();
+}
+
 export async function analyzeCompetitors(
   domain: string
 ): Promise<IndustryMetrics> {
   try {
-    // Initialize OpenAI
-    const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
+    // Initialize Perplexity
+    const client = new Perplexity({
+      apiKey: process.env.PERPLEXITY_API_KEY,
     });
 
-    // Use OpenAI to get industry metrics
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+    // Use Perplexity to get industry metrics
+    const completion = await client.chat.completions.create({
+      model: 'sonar',
       messages: [
         {
           role: 'user',
@@ -50,6 +60,7 @@ export async function analyzeCompetitors(
             "conversionRate": number // Average conversion rate (as a percentage)
           }
           Make sure the values are realistic industry averages.
+          Return ONLY the JSON object, no additional text.
         `,
         },
       ],
@@ -58,11 +69,7 @@ export async function analyzeCompetitors(
     try {
       const content = completion.choices[0].message?.content;
       if (content) {
-        // Clean the response to ensure it's valid JSON
-        const cleanedContent = content
-          .trim()
-          .replace(/^```json\n?/, '')
-          .replace(/\n?```$/, '');
+        const cleanedContent = cleanPerplexityResponse(content);
         const metrics = JSON.parse(cleanedContent);
 
         // Validate and format the metrics
@@ -75,7 +82,7 @@ export async function analyzeCompetitors(
         };
       }
     } catch (parseError) {
-      console.error('Error parsing OpenAI response:', parseError);
+      console.error('Error parsing Perplexity response:', parseError);
     }
 
     // Return default values if parsing fails
@@ -98,14 +105,14 @@ export async function analyzeCompetitorsDetailed(
   domain: string
 ): Promise<Competitor[]> {
   try {
-    // Initialize OpenAI
-    const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
+    // Initialize Perplexity
+    const client = new Perplexity({
+      apiKey: process.env.PERPLEXITY_API_KEY,
     });
 
-    // Step 1: Use OpenAI to identify potential competitors
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+    // Step 1: Use Perplexity to identify potential competitors
+    const completion = await client.chat.completions.create({
+      model: 'sonar',
       messages: [
         {
           role: 'user',
@@ -115,6 +122,7 @@ export async function analyzeCompetitorsDetailed(
           Return only a JSON array of competitor URLs.
           Make sure the URLs are valid and active websites.
           Example response format: ["https://example1.com", "https://example2.com"]
+          Return ONLY the JSON array, no additional text.
         `,
         },
       ],
@@ -124,11 +132,7 @@ export async function analyzeCompetitorsDetailed(
     try {
       const content = completion.choices[0].message?.content;
       if (content) {
-        // Clean the response to ensure it's valid JSON
-        const cleanedContent = content
-          .trim()
-          .replace(/^```json\n?/, '')
-          .replace(/\n?```$/, '');
+        const cleanedContent = cleanPerplexityResponse(content);
         const parsed = JSON.parse(cleanedContent);
         // Ensure we have an array of strings
         competitorUrls = Array.isArray(parsed)
@@ -136,7 +140,7 @@ export async function analyzeCompetitorsDetailed(
           : [];
       }
     } catch (parseError) {
-      console.error('Error parsing OpenAI response:', parseError);
+      console.error('Error parsing Perplexity response:', parseError);
       return [];
     }
 
@@ -157,7 +161,7 @@ export async function analyzeCompetitorsDetailed(
     for (const url of competitorUrls) {
       try {
         // Validate URL format
-        if (!url.startsWith('http') || !url.startsWith('https') ) {
+        if (!url.startsWith('http') || !url.startsWith('https')) {
           console.error(`Invalid URL format: ${url}`);
           continue;
         }

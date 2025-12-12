@@ -1064,7 +1064,11 @@ const Results = () => {
                   <Tbody>
                     <Tr backgroundColor="teal.600">
                       <Td>
-                        <Image src={reportData.screenshot} width="300px" alt="Your site screenshot" />
+                        <Image
+                          src={reportData.screenshot}
+                          width="300px"
+                          alt="Your site screenshot"
+                        />
                       </Td>
                       <Td>Your Site</Td>
                       <Td>
@@ -1091,7 +1095,11 @@ const Results = () => {
                               maxW={{ base: '150px', md: '200px' }}
                               height="200px"
                               objectFit="cover"
-                              alt={competitor.name ? `${competitor.name} site screenshot` : ''}
+                              alt={
+                                competitor.name
+                                  ? `${competitor.name} site screenshot`
+                                  : ''
+                              }
                             />
                           ) : (
                             <Box

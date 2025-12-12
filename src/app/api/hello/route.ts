@@ -304,7 +304,7 @@ export const GET = async (req: Request) => {
     try {
       // Clean up the response - Perplexity may wrap JSON in markdown code blocks
       let cleanedResponse = responseString.trim();
-      
+
       // Remove markdown code blocks if present (```json ... ``` or ``` ... ```)
       if (cleanedResponse.startsWith('```')) {
         // Remove opening code block (with optional language identifier like 'json')
@@ -312,17 +312,19 @@ export const GET = async (req: Request) => {
         // Remove closing code block
         cleanedResponse = cleanedResponse.replace(/[\s\n]?```\s*$/, '');
       }
-      
+
       // Trim again after removing code blocks
       cleanedResponse = cleanedResponse.trim();
-      
+
       parsedResponse = JSON.parse(cleanedResponse);
       // console.log('parsed response:', parsedResponse);
     } catch (parseError) {
       console.error('Error parsing JSON:', parseError);
       console.error('Raw response:', responseString);
       return NextResponse.json(
-        { error: `Failed to parse the response: ${parseError instanceof Error ? parseError.message : String(parseError)}` },
+        {
+          error: `Failed to parse the response: ${parseError instanceof Error ? parseError.message : String(parseError)}`,
+        },
         { status: 500 }
       );
     }
