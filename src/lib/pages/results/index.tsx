@@ -39,6 +39,7 @@ import {
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import React from 'react';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { FaBuilding } from 'react-icons/fa';
 import {
   MdPhotoCamera,
@@ -77,6 +78,11 @@ const sectionIcons = {
 };
 
 const Results = () => {
+  const { executeRecaptcha } = useGoogleReCaptcha();
+  
+  const isLocalhost = typeof window !== 'undefined' && 
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
   const {
     reportData,
     domainLink,
@@ -197,21 +203,45 @@ const Results = () => {
 
     const isValid = validateForm();
 
+    if (!isValid) {
+      return;
+    }
+
     setEmail(formData.email);
     setFirstName(formData.firstName);
     setLastName(formData.lastName);
     setPhoneNum(formData.phoneNumber);
 
     console.log('Form submitted:', formData);
-    console.log('Form valid:', isValid);
     setFormLoading(true);
 
-    if (isValid === false) {
-      setFormLoading(false);
-    }
-
-    // if(validateForm()) return false
     try {
+      // Verify reCAPTCHA (skip on localhost)
+      if (!isLocalhost) {
+        if (!executeRecaptcha) {
+          console.error('reCAPTCHA not loaded');
+          setFormLoading(false);
+          return;
+        }
+
+        const recaptchaToken = await executeRecaptcha('submit_report_form');
+        
+        const verifyResponse = await fetch('/api/verify-recaptcha', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ token: recaptchaToken }),
+        });
+
+        const verifyData = await verifyResponse.json();
+        
+        if (!verifyData.success) {
+          console.error('reCAPTCHA verification failed');
+          setFormLoading(false);
+          return;
+        }
+      }
       // Add your form submission logic here
       // For example:
       // await submitForm()

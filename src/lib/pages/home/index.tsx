@@ -23,13 +23,10 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import Pusher from 'pusher-js';
 import React from 'react';
-import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
 import { useApp } from '../../contexts/app';
 
 const Home = () => {
-  const { executeRecaptcha } = useGoogleReCaptcha();
-
   React.useEffect(() => {
     const pusher = new Pusher('42cbe4cb2af6b19119ee', {
       cluster: 'us2',
@@ -56,9 +53,6 @@ const Home = () => {
   const [errorMessage, setErrorMessage] = React.useState('');
   const router = useRouter();
 
-  const isLocalhost = typeof window !== 'undefined' && 
-    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
@@ -71,36 +65,6 @@ const Home = () => {
     setLoading(true);
 
     try {
-      // Skip reCAPTCHA only on localhost
-      if (!isLocalhost) {
-        // Execute reCAPTCHA verification
-        if (!executeRecaptcha) {
-          setErrorMessage('reCAPTCHA not loaded. Please try again.');
-          setLoading(false);
-          return;
-        }
-
-        // Get reCAPTCHA token
-        const recaptchaToken = await executeRecaptcha('submit_scan');
-        
-        // Verify reCAPTCHA token on the server
-        const verifyResponse = await fetch('/api/verify-recaptcha', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ token: recaptchaToken }),
-        });
-
-        const verifyData = await verifyResponse.json();
-        
-        if (!verifyData.success) {
-          setErrorMessage('reCAPTCHA verification failed. Please try again.');
-          setLoading(false);
-          return;
-        }
-      }
-
       // Proceed with the scan
       const domain = `https://${searchValue.trim()}`;
       console.log('Analyzing:', domain);
