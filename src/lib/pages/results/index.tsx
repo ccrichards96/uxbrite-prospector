@@ -39,7 +39,7 @@ import {
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import React from 'react';
-import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+import ReCAPTCHA from 'react-google-recaptcha';
 import { FaBuilding } from 'react-icons/fa';
 import {
   MdPhotoCamera,
@@ -78,10 +78,13 @@ const sectionIcons = {
 };
 
 const Results = () => {
-  const { executeRecaptcha } = useGoogleReCaptcha();
+  const recaptchaRef = React.useRef<ReCAPTCHA>(null);
+  const [recaptchaToken, setRecaptchaToken] = React.useState<string | null>(null);
   
   const isLocalhost = typeof window !== 'undefined' && 
     (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+  const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
   const {
     reportData,
@@ -217,14 +220,12 @@ const Results = () => {
 
     try {
       // Verify reCAPTCHA (skip on localhost)
-      if (!isLocalhost) {
-        if (!executeRecaptcha) {
-          console.error('reCAPTCHA not loaded');
+      if (!isLocalhost && recaptchaSiteKey) {
+        if (!recaptchaToken) {
+          setFormErrors((prev) => ({ ...prev, firstName: 'Please complete the reCAPTCHA challenge' }));
           setFormLoading(false);
           return;
         }
-
-        const recaptchaToken = await executeRecaptcha('submit_report_form');
         
         const verifyResponse = await fetch('/api/verify-recaptcha', {
           method: 'POST',
@@ -239,8 +240,14 @@ const Results = () => {
         if (!verifyData.success) {
           console.error('reCAPTCHA verification failed');
           setFormLoading(false);
+          recaptchaRef.current?.reset();
+          setRecaptchaToken(null);
           return;
         }
+        
+        // Reset reCAPTCHA after successful verification
+        recaptchaRef.current?.reset();
+        setRecaptchaToken(null);
       }
       // Add your form submission logic here
       // For example:
@@ -1381,6 +1388,17 @@ const Results = () => {
                       {formErrors.phoneNumber}
                     </FormErrorMessage>
                   </FormControl>
+                  {!isLocalhost && recaptchaSiteKey && (
+                    <Box display="flex" justifyContent="center">
+                      <ReCAPTCHA
+                        ref={recaptchaRef}
+                        sitekey={recaptchaSiteKey}
+                        onChange={(token) => setRecaptchaToken(token)}
+                        onExpired={() => setRecaptchaToken(null)}
+                        theme="dark"
+                      />
+                    </Box>
+                  )}
                   <Button
                     type="submit"
                     rightIcon={

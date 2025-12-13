@@ -36,13 +36,10 @@ export async function POST(request: Request) {
 
     const data = await response.json();
 
-    if (data.success && data.score >= 0.5) {
-      // Score threshold: 0.5 (you can adjust this)
-      // 1.0 is very likely a good interaction, 0.0 is very likely a bot
+    // reCAPTCHA v2 just returns success: true/false (no score like v3)
+    if (data.success) {
       return NextResponse.json({
         success: true,
-        score: data.score,
-        action: data.action,
       });
     } else {
       console.log('reCAPTCHA verification failed:', data);
@@ -50,7 +47,7 @@ export async function POST(request: Request) {
         {
           success: false,
           error: 'reCAPTCHA verification failed',
-          score: data.score,
+          errorCodes: data['error-codes'],
         },
         { status: 400 }
       );
