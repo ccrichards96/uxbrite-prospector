@@ -39,7 +39,7 @@ export async function analyzeSEO(url: string): Promise<SEOData> {
     // Navigate to the URL
     await page.goto(url, {
       waitUntil: 'networkidle0',
-      timeout: 30000,
+      timeout: 50000,
     });
 
     // Get the HTML content

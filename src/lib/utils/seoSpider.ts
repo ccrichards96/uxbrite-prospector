@@ -179,7 +179,7 @@ export async function crawlAndAnalyzeSEO(
     const startTime = Date.now();
     await page.goto(targetUrl, {
       waitUntil: 'networkidle2',
-      timeout: 30000,
+      timeout: 50000,
     });
     const loadTime = Date.now() - startTime;
 

@@ -237,7 +237,7 @@ export async function analyzeCompetitorsDetailed(
         // Capture screenshot
         const page = await browser.newPage();
         await page.setViewport({ width: 1200, height: 800 });
-        await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000 });
+        await page.goto(url, { waitUntil: 'networkidle0', timeout: 50000 });
         const screenshot = await page.screenshot({ encoding: 'base64' });
         await page.close();
 
