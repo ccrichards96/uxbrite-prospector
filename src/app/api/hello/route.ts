@@ -734,7 +734,7 @@ export const GET = async (req: Request) => {
       .toLowerCase();
     const fileName = `web-report-${scannedDomain}.docx`;
 
-    console.log('Generated document, uploading to S3...');
+    console.log('Generated document, uploading to S3 bucket...');
 
     try {
       await UploadDoc(doc, fileName);
