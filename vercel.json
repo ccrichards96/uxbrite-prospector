@@ -1,5 +1,4 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "npm run build",
   "functions": {
     "src/app/api/screenshot/route.ts": {
@@ -10,9 +9,5 @@
       "maxDuration": 300,
       "memory": 3008
     }
-  },
-  "includeFiles": [
-    "src/lib/templates/**",
-    "public/templates/**"
-  ]
+  }
 }
