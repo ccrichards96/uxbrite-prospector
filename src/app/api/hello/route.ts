@@ -1,6 +1,4 @@
 import { TemplateHandler } from 'easy-template-x';
-import * as fs from 'fs';
-import * as path from 'path';
 import { NextResponse } from 'next/server';
 import fetch from 'node-fetch';
 import Perplexity from '@perplexity-ai/perplexity_ai';
@@ -689,25 +687,22 @@ export const GET = async (req: Request) => {
       message: 'Generating your report...',
     });
 
-    // 1. read template file from public directory
-    const templatePath = path.join(process.cwd(), 'public', 'templates', 'web-report-template.docx');
-    let templateFile;
-    
+    // 1. fetch template file from S3
+    const TEMPLATE_URL = 'https://ux-webcheck.s3.us-east-2.amazonaws.com/web-report-template.docx';
+    let templateFile: Buffer;
+
     try {
-      templateFile = fs.readFileSync(templatePath);
-    } catch (error) {
-      console.error('Error reading template file:', error);
-      // Fallback: try reading from build output directory
-      const fallbackPath = path.join(process.cwd(), '.next/server/chunks', 'web-report-template.docx');
-      try {
-        templateFile = fs.readFileSync(fallbackPath);
-      } catch (fallbackError) {
-        console.error('Template file not found in any location');
-        return NextResponse.json(
-          { error: 'Report template not available' },
-          { status: 500 }
-        );
+      const templateResponse = await fetch(TEMPLATE_URL);
+      if (!templateResponse.ok) {
+        throw new Error(`Failed to fetch template: ${templateResponse.status}`);
       }
+      templateFile = Buffer.from(await templateResponse.arrayBuffer());
+    } catch (error) {
+      console.error('Error fetching template file:', error);
+      return NextResponse.json(
+        { error: 'Report template not available' },
+        { status: 500 }
+      );
     }
 
     const handler = new TemplateHandler();
