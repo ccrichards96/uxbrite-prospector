@@ -386,7 +386,7 @@ export const GET = async (req: Request) => {
 
     pusher.trigger('progress-channel', 'update', {
       progress: 20,
-      message: 'Capturing website screenshot',
+      message: 'Capturing website screenshot & data',
     });
 
     // Get screenshot
@@ -396,7 +396,7 @@ export const GET = async (req: Request) => {
       console.log('Fetching screenshot from:', screenshotUrl);
       
       const screenshotResponse = await fetch(screenshotUrl, {
-        signal: AbortSignal.timeout(50000), // 50 second timeout
+        signal: AbortSignal.timeout(120000), // 50 second timeout
       });
       if (screenshotResponse.ok) {
         const screenshotData = (await screenshotResponse.json()) as {
@@ -414,12 +414,12 @@ export const GET = async (req: Request) => {
 
     pusher.trigger('progress-channel', 'update', {
       progress: 25,
-      message: 'Screenshot captured',
+      message: 'Initial data captured',
     });
 
     // Run SEO Spider to crawl and analyze the website
     pusher.trigger('progress-channel', 'update', {
-      progress: 28,
+      progress: 35,
       message: 'Crawling website for SEO data',
     });
 
@@ -461,7 +461,7 @@ export const GET = async (req: Request) => {
     } : null;
 
     pusher.trigger('progress-channel', 'update', {
-      progress: 30,
+      progress: 50,
       message: 'Performing Full Deep Dive',
     });
 
@@ -617,7 +617,7 @@ export const GET = async (req: Request) => {
 
     // @ts-ignore
     pusher.trigger('progress-channel', 'update', {
-      progress: 60,
+      progress: 75,
       message: 'Generating Competitor Analysis',
     });
 
@@ -658,7 +658,7 @@ export const GET = async (req: Request) => {
     // }
 
     pusher.trigger('progress-channel', 'update', {
-      progress: 70,
+      progress: 80,
       message: 'Sifting thru meta data',
     });
 
@@ -683,6 +683,11 @@ export const GET = async (req: Request) => {
       industry: '',
       brand_oppurtunities: '',
     };
+
+    pusher.trigger('progress-channel', 'update', {
+      progress: 95,
+      message: 'Generating your report...',
+    });
 
     // 1. read template file from public directory
     const templatePath = path.join(process.cwd(), 'public', 'templates', 'web-report-template.docx');
@@ -752,7 +757,7 @@ export const GET = async (req: Request) => {
 
     pusher.trigger('progress-channel', 'update', {
       progress: 100,
-      message: 'Analysis complete',
+      message: 'Analysis complete!',
     });
 
     const bucketName = process.env.MAIN_AWS_BUCKET_NAME;
@@ -761,6 +766,11 @@ export const GET = async (req: Request) => {
       ...parsedResponse,
       report_url: `https://${bucketName}.s3.${region}.amazonaws.com/${fileName}`,
     };
+
+    pusher.trigger('progress-channel', 'update', {
+      progress: 100,
+      message: 'Report is ready!',
+    });
 
     // console.log(parsedResponse);
 
