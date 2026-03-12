@@ -2,11 +2,11 @@
   "buildCommand": "npm run build",
   "functions": {
     "src/app/api/screenshot/route.ts": {
-      "maxDuration": 900,
+      "maxDuration": 300,
       "memory": 1024
     },
     "src/app/api/hello/route.ts": {
-      "maxDuration": 900,
+      "maxDuration": 300,
       "memory": 2048
     }
   }
