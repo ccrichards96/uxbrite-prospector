@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import Script from 'next/script';
 
 import Providers from '~/app/providers';
 import { AppProvider } from '~/lib/contexts/app';
@@ -48,6 +49,9 @@ export const viewport: Viewport = {
 const RootLayout = ({ children }: RootLayoutProps) => {
   return (
     <html lang="en">
+      <head>
+        <Script src="https://cdn.uxbrite.com/v1/uxbrite.js" data-id="UXB-9DVWLHA5" strategy="afterInteractive" />
+      </head>
       <body>
         <Providers>
           <AppProvider>

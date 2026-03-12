@@ -684,21 +684,71 @@ export const GET = async (req: Request) => {
       brand_oppurtunities: '',
     };
 
-    // 1. read template file
-    const templatePath = path.join(process.cwd(), 'src', 'lib', 'templates', 'web-report-template.docx');
-    const templateFile = fs.readFileSync(templatePath);
+    // 1. read template file from public directory
+    const templatePath = path.join(process.cwd(), 'public', 'templates', 'web-report-template.docx');
+    let templateFile;
+    
+    try {
+      templateFile = fs.readFileSync(templatePath);
+    } catch (error) {
+      console.error('Error reading template file:', error);
+      // Fallback: try reading from build output directory
+      const fallbackPath = path.join(process.cwd(), '.next/server/chunks', 'web-report-template.docx');
+      try {
+        templateFile = fs.readFileSync(fallbackPath);
+      } catch (fallbackError) {
+        console.error('Template file not found in any location');
+        return NextResponse.json(
+          { error: 'Report template not available' },
+          { status: 500 }
+        );
+      }
+    }
 
     const handler = new TemplateHandler();
     const flatData = unnest(documentData);
-    const doc = await handler.process(templateFile, { ...flatData });
+    
+    let doc;
+    try {
+      console.log('Starting document generation with data keys:', Object.keys(flatData).length);
+      doc = await handler.process(templateFile, { ...flatData });
+      console.log('Document generation completed, buffer size:', doc.length);
+    } catch (docError) {
+      console.error('Error generating document:', docError);
+      return NextResponse.json(
+        { 
+          error: 'Failed to generate report document',
+          details: docError instanceof Error ? docError.message : String(docError)
+        },
+        { status: 500 }
+      );
+    }
+    
     const scannedDomain = url
-      .replace(/^https?\:\/\//i, '')
-      .replace(/\.com$/, '');
+      .replace(/^https?\:\/\//i, '')  // remove protocol
+      .replace(/^www\./i, '')          // remove www.
+      .replace(/\.[a-z]{2,}(\/.*)?$/i, '') // remove TLD (.com, .rs, .org, etc.) and any path
+      .replace(/[^a-z0-9-]/gi, '-')   // replace remaining dots/special chars with hyphens
+      .replace(/-+/g, '-')             // collapse multiple hyphens
+      .replace(/^-|-$/g, '')           // trim leading/trailing hyphens
+      .toLowerCase();
     const fileName = `web-report-${scannedDomain}.docx`;
 
-    console.log(doc);
+    console.log('Generated document, uploading to S3...');
 
-    await UploadDoc(doc, fileName);
+    try {
+      await UploadDoc(doc, fileName);
+      console.log('Document uploaded successfully to S3');
+    } catch (uploadError) {
+      console.error('Error uploading document:', uploadError);
+      return NextResponse.json(
+        { 
+          error: 'Failed to upload report document',
+          details: uploadError instanceof Error ? uploadError.message : String(uploadError)
+        },
+        { status: 500 }
+      );
+    }
 
     pusher.trigger('progress-channel', 'update', {
       progress: 100,

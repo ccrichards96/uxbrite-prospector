@@ -7,8 +7,12 @@
       "memory": 1024
     },
     "src/app/api/hello/route.ts": {
-      "maxDuration": 180,
-      "memory": 1024
+      "maxDuration": 300,
+      "memory": 3008
     }
-  }
+  },
+  "includeFiles": [
+    "src/lib/templates/**",
+    "public/templates/**"
+  ]
 }
