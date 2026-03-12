@@ -76,7 +76,7 @@ export async function GET(request: Request) {
     console.log('Navigating to URL...');
     await page.goto(url, {
       waitUntil: 'networkidle2',
-      timeout: 25000,
+      timeout: 50000,
     });
     console.log('Navigation complete');
 
